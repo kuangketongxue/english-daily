@@ -381,8 +381,13 @@ async function main() {
       }
       let title = c.title;
       if (!title) {
-        const tm = html.match(/<title[^>]*>([^<]+)<\/title>/i) || html.match(/property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
-        title = tm ? tm[1].replace(/\s*[|｜-]\s*.*$/, '').trim() : c.link;
+        // og:title 优先；<title> 常带「 | 站点名」后缀，只在去掉后缀仍够长时才用，否则保留原样
+        const og = html.match(/property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
+        const tg = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+        let raw = (og ? og[1] : (tg ? tg[1] : '')).trim();
+        const cut = raw.replace(/\s*[|｜]\s*.*$/, '').trim();
+        title = cut.length >= 8 ? cut : raw;
+        if (!title) title = c.link;
       }
       chosen = { ...c, title, text, paras, words, ts: real, minutes: Math.max(3, Math.round(words / 230)) };
       log(`  ✓ 选中 ${c.source}｜${words} 词｜约 ${chosen.minutes} 分钟：${c.title}`);
