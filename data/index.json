@@ -1,12 +1,32 @@
 {
-  "updated": "2026-11-24",
+  "updated": "2026-11-25",
   "counts": {
-    "articles": 1,
+    "articles": 2,
     "books": 0,
     "series": 0,
     "films": 0
   },
   "issues": [
+    {
+      "date": "2026-11-25",
+      "title": "Long Live the Chip King",
+      "title_zh": "",
+      "author": "",
+      "source": "The New Yorker",
+      "link": "https://www.newyorker.com/news/the-lede/long-live-the-chip-king",
+      "words": 1656,
+      "minutes": 7,
+      "published": "2026-11-24T16:45:06.623Z",
+      "genre": "",
+      "cefr": "",
+      "themes": [],
+      "tldr": "",
+      "digest": "",
+      "points": [],
+      "snippet": "The Lede Reporting and commentary on what you need to know today.",
+      "has_analysis": false,
+      "has_translation": false
+    },
     {
       "date": "2026-11-24",
       "title": "A Message to Our Company",
