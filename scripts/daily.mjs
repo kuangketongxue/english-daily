@@ -219,14 +219,14 @@ function extractBody(html) {
 
 async function ask(prompt) {
   const messages = [
-    { role: 'system', content: '你是一位中文科技与思想类编辑，把英文长文浓缩成中文导读。只输出 JSON，不要代码块、不要解释。' },
+    { role: 'system', content: '你是中文科技与思想类编辑，把英文长文整理成一份可学习的中文导读与精读笔记。只输出 JSON，不要代码块、不要解释、不要多余文字。' },
     { role: 'user', content: prompt },
   ];
   if (AI_KEY && AI_BASE) {
     const r = await fetch(AI_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${AI_KEY}` },
-      body: JSON.stringify({ model: AI_MODEL, messages, temperature: 0.4 }),
+      body: JSON.stringify({ model: AI_MODEL, messages, temperature: 0.35 }),
     });
     const j = await r.json();
     return j.choices?.[0]?.message?.content || '';
@@ -236,6 +236,90 @@ async function ask(prompt) {
   throw new Error('未配置 AI_API_KEY / AI_BASE_URL（GitHub Models 已下线）');
 }
 
+// ── 导读 + 精读：一次产出完整结构，校验不过就带着问题重问一次 ──
+// 只有「够短」的文章才做逐段中译：长文全译既贵又慢，而且对学习没什么增益。
+function analysisPrompt(chosen, wantTrans) {
+  const numbered = (chosen.paras || []).map((p, i) => `[${i + 1}] ${p}`).join('\n\n').slice(0, 16000);
+  const transRule = wantTrans
+    ? '- translation：与段落一一对应的中文翻译，数组长度必须等于段落数，逐段翻译，不要合并。'
+    : '- translation：这篇太长，返回空数组 []。';
+  return `文章标题：${chosen.title}
+来源：${chosen.source}
+总词数：${chosen.words}
+
+正文（按段落编号，可能被截断）：
+${numbered}
+
+请读完再输出一个 JSON 对象，字段如下：
+{
+  "title_zh": "标题的准确中译，不加书名号",
+  "author": "作者署名，正文里找不到就填空字符串",
+  "genre": "体裁，例如 公开信 / 社论 / 深度报道 / 人物特写",
+  "cefr": "整篇难度，只能是 A2 / B1 / B2 / C1 / C2 之一，附半句话理由，例如「B2（长句多、抽象名词多）」",
+  "themes": ["2~4 个中文主题标签"],
+  "tldr": "一句话结论，不超过 30 字，要有判断不要复述标题",
+  "digest": "180~260 字中文导读：讲清这篇在说什么、作者的立场是什么、为什么值得读。不要复述标题，不要用「本文」开头。",
+  "points": ["3 条读完能带走的具体信息，每条 30~50 字"],
+  "analysis": {
+    "outline": [{"at": 段落编号, "h": "这段在做什么，8~14 字", "note": "40~70 字，讲结构作用，不要复述内容"}],
+    "sentences": [{"en": "原文里的长难句，一字不改", "zh": "准确中译", "gram": "拆解主干、指出语法点，可用 <b> 强调关键词，60~120 字"}],
+    "vocab": [{"w": "词或短语", "pos": "词性缩写", "zh": "在这篇里的准确释义", "ex": "原文中的完整句子"}],
+    "patterns": [{"pattern": "可直接套用的句式", "zh": "什么场合用，30 字内", "ex": "自己造一个不同的例句"}],
+    "questions": ["3 个能引出思考或讨论的问题，中文，不要问「你学到了什么」这类空话"]
+  },
+  "translation": ["逐段中文"]
+}
+
+硬性要求：
+- analysis.outline 覆盖全文结构，3~7 条，at 必须是上面真实存在的段落编号，且按升序。
+- analysis.sentences 2~4 条，必须从原文逐字摘录，不许改写。
+- analysis.vocab 6~10 个，优先选「认识但用不出来」的词，不要选 the / of 这类。
+- analysis.patterns 3~5 条，必须能迁移到写作。
+${transRule}
+- 所有中文都用简体，不要出现英文标点的全角混排问题。
+- 不确定的字段宁可留空字符串，也不要编造作者、日期或事实。`;
+}
+
+function validateAnalysis(j, chosen, wantTrans) {
+  const p = [];
+  if (!j.title_zh || String(j.title_zh).length < 4) p.push('title_zh 缺失');
+  if (!j.digest || String(j.digest).length < 80) p.push('digest 少于 80 字');
+  if (!Array.isArray(j.points) || j.points.length < 3) p.push('points 少于 3 条');
+  if (!j.cefr) p.push('cefr 缺失');
+  const a = j.analysis || {};
+  const n = (chosen.paras || []).length;
+  if (!Array.isArray(a.outline) || a.outline.length < 3) p.push('outline 少于 3 段');
+  else if (a.outline.some(o => !o || !o.at || o.at < 1 || o.at > n)) p.push('outline.at 超出段落范围');
+  if (!Array.isArray(a.sentences) || a.sentences.length < 2) p.push('sentences 少于 2 句');
+  if (!Array.isArray(a.vocab) || a.vocab.length < 5) p.push('vocab 少于 5 词');
+  if (!Array.isArray(a.patterns) || a.patterns.length < 2) p.push('patterns 少于 2 条');
+  if (!Array.isArray(a.questions) || a.questions.length < 2) p.push('questions 少于 2 条');
+  if (wantTrans && (!Array.isArray(j.translation) || j.translation.length < Math.max(2, Math.floor(n * 0.8)))) {
+    p.push('translation 段数不足');
+  }
+  return p;
+}
+
+async function analyze(chosen) {
+  const wantTrans = chosen.words <= 800;
+  const base = analysisPrompt(chosen, wantTrans);
+  let lastErr = '';
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const out = await ask(attempt === 1 ? base : `${base}\n\n上一次输出不合格：${lastErr}。请严格按上面的字段重写，不要省略任何字段。`);
+      const j = parseJSONLoose(out);
+      const problems = validateAnalysis(j, chosen, wantTrans);
+      if (!problems.length) return j;
+      lastErr = problems.join('；');
+      log(`  ⚠️ 第 ${attempt} 次导读不合格：${lastErr}`);
+    } catch (e) {
+      lastErr = e.message;
+      log(`  ⚠️ 第 ${attempt} 次导读失败：${e.message}`);
+    }
+  }
+  throw new Error(lastErr || '模型没有产出可用导读');
+}
+
 function parseJSONLoose(s) {
   const t = s.replace(/^```(?:json)?/m, '').replace(/```$/m, '').trim();
   const i = t.indexOf('{'), k = t.lastIndexOf('}');
@@ -243,20 +327,60 @@ function parseJSONLoose(s) {
   return JSON.parse(t.slice(i, k + 1));
 }
 
+// 首页只吃「目录级」字段，正文留在 data/posts/<date>.json。
+// 之前把 body 全塞进 index.json，每期 60 段，几十期之后首屏就是几百 KB。
+function slimIssue(p) {
+  return {
+    date: p.date,
+    title: p.title,
+    title_zh: p.title_zh || '',
+    author: p.author || '',
+    source: p.source || '',
+    link: p.link || '',
+    words: p.words || 0,
+    minutes: p.minutes || 0,
+    published: p.published || '',
+    genre: p.genre || '',
+    cefr: p.cefr || p.difficulty || '',
+    themes: Array.isArray(p.themes) ? p.themes.slice(0, 4) : [],
+    tldr: p.tldr || '',
+    digest: p.digest || '',
+    points: Array.isArray(p.points) ? p.points.slice(0, 3) : [],
+    snippet: p.snippet || (Array.isArray(p.body) ? (p.body[1] || p.body[0] || '').slice(0, 220) : ''),
+    has_analysis: !!p.analysis,
+    has_translation: !!(Array.isArray(p.translation) && p.translation.length),
+  };
+}
+
 function rebuildIndex() {
   const issues = (existsSync(POSTS) ? readdirSync(POSTS).filter(f => f.endsWith('.json')) : [])
     .map(f => { try { return JSON.parse(readFileSync(join(POSTS, f), 'utf8')); } catch { return null; } })
     .filter(Boolean)
     .sort((a, b) => b.date.localeCompare(a.date))
-    .map(p => ({
-      date: p.date, title: p.title, title_zh: p.title_zh, source: p.source,
-      link: p.link, minutes: p.minutes, words: p.words, excerpt: p.excerpt,
-      published: p.published || '',
-      body: p.body || [],
-      digest: p.digest, points: p.points || [], difficulty: p.difficulty || '',
-    }));
+    .map(slimIssue);
+
+  // 书籍 / 剧集 / 电影先留空壳：有 data/library.json 就并进来，没有就空数组
+  let lib = { books: [], series: [], films: [] };
+  try {
+    const raw = JSON.parse(readFileSync(join(DATA, 'library.json'), 'utf8'));
+    lib = { books: raw.books || [], series: raw.series || [], films: raw.films || [] };
+  } catch {}
+
   mkdirSync(DATA, { recursive: true });
-  writeFileSync(join(DATA, 'index.json'), JSON.stringify({ updated: today(), issues }, null, 2) + '\n');
+  const payload = {
+    updated: today(),
+    counts: {
+      articles: issues.length,
+      books: lib.books.length,
+      series: lib.series.length,
+      films: lib.films.length,
+    },
+    issues,
+    books: lib.books,
+    series: lib.series,
+    films: lib.films,
+  };
+  writeFileSync(join(DATA, 'index.json'), JSON.stringify(payload, null, 2) + '\n');
   return issues.length;
 }
 
@@ -318,6 +442,12 @@ function pickTarget() {
 }
 
 async function main() {
+  // 只重建索引：手改过 data/posts/*.json 之后用它同步首页目录
+  if (process.argv.includes('--reindex')) {
+    const n = rebuildIndex();
+    log(`索引重建完成：共 ${n} 期`);
+    return;
+  }
   const date = DRY ? today() : pickTarget();
   if (!date) { log(`今日 ${today()} 已有文章，近 3 天无缺期，跳过`); return; }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error(`日期不合法：${date}`);
@@ -351,7 +481,8 @@ async function main() {
       const html = await get(c.link, 30000);
       const { text, paras, words } = extractBody(html);
       const official = /newsroom|nvidia|openai|anthropic|apple|microsoft|meta\.com|tesla/i.test(hostOf(c.link));
-      const minOk = c.forced ? 80 : (official ? 250 : MIN_WORDS);
+      // 官方 newsroom 的公开信天然短，给 350 词下限；其余一律 700 词起，才对得起「长文」两个字
+      const minOk = c.forced ? 80 : (official ? 350 : MIN_WORDS);
       const maxAge = c.forced ? 365 * 24 : (official ? 14 * 24 : MAX_AGE_H);
       if (words < minOk) {
         const md = await firecrawlMarkdown(c.link);
@@ -403,31 +534,43 @@ async function main() {
   }
   if (!chosen) throw new Error('候选全部抓不到正文或篇幅不足');
 
-  let meta = { title_zh: '', digest: '', points: [], difficulty: '' };
+  // 导读与精读：拿到就完整写入，拿不到就如实标记，不假装有
+  let meta = {};
+  let ok = false;
   try {
-    const body = chosen.text.slice(0, 12000);
-    const out = await ask(`文章标题：${chosen.title}\n来源：${chosen.source}\n正文（可能被截断）：\n${body}\n\n请输出 JSON：\n{"title_zh":"标题的准确中译","digest":"150~220 字中文导读，讲清这篇在说什么、为什么值得读，不要复述标题","points":["要点1","要点2","要点3"],"difficulty":"四级 / 六级 / 雅思托福 / 母语者"}`);
-    meta = { ...meta, ...parseJSONLoose(out) };
-    log(`  中文导读 OK：${meta.title_zh || '(无标题中译)'}`);
+    meta = await analyze(chosen);
+    ok = true;
+    log(`  导读 + 精读 OK：${meta.title_zh || '(无标题中译)'}｜${(meta.analysis?.outline || []).length} 段结构｜${(meta.analysis?.vocab || []).length} 个词`);
   } catch (e) {
-    log(`  ⚠️ 模型没写成中文导读（${e.message}），本日只发原文信息`);
+    log(`  ⚠️ 导读生成失败（${e.message}）：本期只发原文信息，站点会隐藏精读区`);
   }
+
+  const bodyParas = chosen.paras || [];
+  const trans = Array.isArray(meta.translation) ? meta.translation.slice(0, bodyParas.length) : [];
 
   const post = {
     date,
     title: chosen.title,
     title_zh: meta.title_zh || '',
+    author: meta.author || '',
     source: chosen.source,
     link: chosen.link,
     words: chosen.words,
     minutes: chosen.minutes,
-    excerpt: chosen.excerpt,
-    body: chosen.paras,
     published: chosen.ts ? new Date(chosen.ts).toISOString() : '',
+    genre: meta.genre || '',
+    cefr: meta.cefr || '',
+    themes: Array.isArray(meta.themes) ? meta.themes.slice(0, 4) : [],
+    tldr: meta.tldr || '',
+    excerpt: chosen.excerpt,
+    snippet: (bodyParas[1] || bodyParas[0] || '').slice(0, 220),
     digest: meta.digest || '',
-    points: Array.isArray(meta.points) ? meta.points.slice(0, 5) : [],
-    difficulty: meta.difficulty || '',
-    no_digest: !meta.digest,
+    points: Array.isArray(meta.points) ? meta.points.slice(0, 3) : [],
+    body: bodyParas,
+    translation: trans,
+    analysis: meta.analysis || null,
+    analysis_version: 2,
+    no_analysis: !ok,
     generated_at: new Date().toISOString(),
   };
 

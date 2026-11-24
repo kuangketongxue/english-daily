@@ -1,51 +1,127 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="night">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Curated Reads · 每日英文热点长文</title>
-<meta name="description" content="每天一篇英文热点长文：公开信、辞职信、深度评论，原文全文 + 中文导读 + 打分。">
-<link rel="preload" as="image" href="img/bg.jpg">
-<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Curated Reads · 每天一篇值得读完的英文长文</title>
+<meta name="description" content="每天一篇英文一手长文：公开信、深度评论、公司内部信。英文原文全文 + 中文导读 + AI 精读（难句、词汇、句式、思辨）。">
+<meta name="theme-color" content="#111214">
+<meta property="og:title" content="Curated Reads · 每天一篇值得读完的英文长文">
+<meta property="og:description" content="每天一篇英文一手长文，原文全文 + 中文导读 + AI 精读。">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111214'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='19' font-style='italic' fill='%23d97757' text-anchor='middle'%3ER%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/home.css">
+<script>
+(function () {
+  try {
+    var p = JSON.parse(localStorage.getItem('cr.prefs.v2') || '{}');
+    var t = p.theme || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'paper' : 'night');
+    document.documentElement.dataset.theme = t;
+  } catch (e) { document.documentElement.dataset.theme = 'night'; }
+})();
+</script>
 </head>
-<body>
-<div class="bg" aria-hidden="true"></div>
-<div class="veil" aria-hidden="true"></div>
+<body class="app-body">
 
-<header class="top">
-  <div class="wrap bar">
-    <div class="brand">
-      <span class="mark">R</span>
-      <span class="name">Curated Reads</span>
+<div class="app">
+
+  <!-- ── 左侧资料库 ───────────────────────────────────── -->
+  <aside class="side" id="side">
+    <div class="side__top">
+      <a class="side__brand" href="./" aria-label="Curated Reads 首页">
+        <span class="side__mark">R</span>
+        <span class="side__word">Curated Reads</span>
+      </a>
+      <button class="side__collapse" id="collapseBtn" aria-label="收起侧栏" title="收起侧栏">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 10l-2 2 2 2"/></svg>
+      </button>
     </div>
-    <div class="today" id="today"></div>
-  </div>
-</header>
 
-<main class="wrap">
-  <section class="lead">
-    <h1>每天一篇<br>值得读完的英文长文</h1>
-    <p class="lede">热点优先：公开信、辞职信、巨头内部信、深度评论。英文原文整篇放在页面上，中文导读只负责帮你判断值不值得读。</p>
-  </section>
+    <nav class="side__nav" aria-label="资料库">
+      <p class="side__label">资料库</p>
+      <a class="navitem on" href="#articles" data-kind="articles">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M9 9h7M9 13h7M9 17h4"/></svg>
+        <span class="navitem__t">文章</span><span class="navitem__n" id="cntArticles">0</span>
+      </a>
+      <a class="navitem" href="#books" data-kind="books">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M10 4h8.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H10"/></svg>
+        <span class="navitem__t">书籍</span><span class="navitem__chev">›</span>
+      </a>
+      <a class="navitem" href="#series" data-kind="series">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A1.5 1.5 0 0 1 5.5 5h5v14h-5A1.5 1.5 0 0 1 4 17.5z"/><path d="M13.5 5H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4.5"/><path d="M10.5 5v14"/></svg>
+        <span class="navitem__t">剧集</span><span class="navitem__chev">›</span>
+      </a>
+      <a class="navitem" href="#films" data-kind="films">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M8 5v4M16 5v4M8 19v-4M16 19v-4"/></svg>
+        <span class="navitem__t">电影</span><span class="navitem__chev">›</span>
+      </a>
 
-  <section id="hero" class="hero" hidden></section>
+      <p class="side__label">我的</p>
+      <a class="navitem" href="#favs" data-kind="favs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.9-5.2 2.9 1-5.9L3.5 10.2l5.9-.8z"/></svg>
+        <span class="navitem__t">收藏</span><span class="navitem__n" id="cntFavs">0</span>
+      </a>
+    </nav>
 
-  <div class="section-head">
-    <h2>往期</h2>
-    <div class="sort">
-      <button class="chip on" data-sort="date">最新</button>
-      <button class="chip" data-sort="score">我的评分</button>
+    <div class="side__foot">
+      <button class="navitem navitem--btn" data-open-sync>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18a4 4 0 0 1-.5-8 6 6 0 0 1 11.6 1.5A3.5 3.5 0 0 1 17 18z"/><path d="M12 12v5M9.5 14.5 12 12l2.5 2.5"/></svg>
+        <span class="navitem__t">同步评分</span>
+      </button>
+      <button class="navitem navitem--btn" data-theme-toggle>
+        <span data-theme-icon></span>
+        <span class="navitem__t">切换主题</span>
+      </button>
     </div>
-  </div>
+  </aside>
 
-  <section id="list" class="list"></section>
-  <p id="empty" class="empty" hidden>还没有内容。生成脚本跑过一次后，这里会出现第一期。</p>
+  <div class="side-scrim" id="sideScrim"></div>
 
-  <footer class="foot">
-    <p>选品只收英文原文（Aeon / Works in Progress / The Atlantic / Nautilus / Quanta 等公开 RSS），按热点与站点权重排序，写过的不重复。中文导读由模型生成，可能失真，以原文为准。</p>
-  </footer>
-</main>
+  <!-- ── 主区 ─────────────────────────────────────────── -->
+  <main class="main">
+    <div class="mtop">
+      <button class="mtop__btn" id="menuBtn" aria-label="打开导航">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <span class="mtop__brand">Curated Reads</span>
+      <button class="mtop__btn" data-theme-toggle data-theme-icon aria-label="切换主题"></button>
+    </div>
 
-<script src="app.js"></script>
+    <header class="main__head">
+      <div class="main__title">
+        <h1 id="pageTitle">Curated Reads</h1>
+        <p class="main__sub" id="pageSub">每天一篇值得读完的英文长文</p>
+      </div>
+      <div class="main__tools">
+        <div class="sortmenu">
+          <button class="ghostbtn" id="sortBtn" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 4 4 7M7 4l3 3"/><path d="M13 7h7M13 12h5M13 17h3"/></svg>
+            <span id="sortLabel">最新</span>
+          </button>
+          <div class="sortpop" id="sortPop" hidden>
+            <button data-sort="date" class="on">最新优先</button>
+            <button data-sort="score">我的评分</button>
+            <button data-sort="length">篇幅由短到长</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="continue" class="cont" hidden></section>
+
+    <section class="feed" id="feed" aria-live="polite"></section>
+
+    <div class="feed-foot">
+      <span id="feedNote"></span>
+      <span class="feed-foot__meta">CURATED READS · 每日 05:30 北京时间更新</span>
+    </div>
+  </main>
+
+</div>
+
+<script src="assets/js/lib.js"></script>
+<script src="assets/js/repo.js"></script>
+<script src="assets/js/home.js"></script>
 </body>
 </html>

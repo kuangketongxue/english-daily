@@ -30,7 +30,6 @@ on:
 
 permissions:
   contents: write
-  models: read      # 没有自备 AI_API_KEY 时用 GitHub Models 生成中文导读
 
 concurrency:
   group: daily-pick
@@ -57,10 +56,10 @@ jobs:
           fi
           printf '%s' "$PS_CONFIG" > config.json
 
-      - name: 选品 + 写中文导读
+      - name: 选品 + 写导读与精读
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          # 可选：填了就用自己的模型；不填走 GitHub Models
+          # 必填：GitHub Models 已于 2026-07 下线，没有 key 就只发原文
           AI_API_KEY: ${{ secrets.AI_API_KEY }}
           AI_BASE_URL: ${{ secrets.AI_BASE_URL }}
           AI_MODEL: ${{ secrets.AI_MODEL }}

@@ -1,12 +1,25 @@
 {
   "date": "2026-11-24",
   "title": "A Message to Our Company",
-  "title_zh": "黄仁勋致 NVIDIA 全体员工信（原文全文）",
+  "title_zh": "黄仁勋致 NVIDIA 全体员工信",
+  "author": "Jensen Huang",
   "source": "nvidianews.nvidia.com",
   "link": "https://nvidianews.nvidia.com/news/a-message-to-our-company",
   "words": 261,
   "minutes": 1,
+  "published": "2026-11-08T00:00:00.000Z",
+  "genre": "公开信 / 内部邮件",
+  "cefr": "B1–B2",
+  "themes": ["危机公关", "道歉信", "公司治理", "AI 芯片"],
+  "tldr": "一封 261 词、没有一句辩解的责任声明：认错、担责，只求一件事——给家人隐私。",
   "excerpt": "NVIDIA founder and CEO Jensen Huang sent the following email to NVIDIA employees earlier today.",
+  "snippet": "I was unfaithful to my wife. My actions hurt her and our children. There is no excuse for what I did. I am deeply sorry.",
+  "digest": "这不是评论，是黄仁勋发给英伟达全体员工的原始邮件全文：7 段、261 词。三件事——承认婚内不忠、向家人与同事道歉并承担全部责任、就媒体报道涉及的国家安全问题表态支持董事会独立调查并全力配合。英文极简，没有一句辩解，也没有一个形容词在替自己找台阶，是学「正式道歉信怎么写」的范本：先认事实，再担后果，最后只提一个请求——给家人隐私。",
+  "points": [
+    "第一段是编者按，交代信件性质与时间；后面六段才是本人说的话，读英文信要先分清谁在说话。",
+    "道歉的次序有讲究：先家人，再同事、董事会、股东与合作伙伴，责任始终收在自己身上。",
+    "被质疑国家安全时不辩解细节，只说明支持董事会独立调查、全力配合——这是法律风险下的标准写法。"
+  ],
   "body": [
     "NVIDIA founder and CEO Jensen Huang sent the following email to NVIDIA employees earlier today.",
     "I was unfaithful to my wife. My actions hurt her and our children. There is no excuse for what I did. I am deeply sorry.",
@@ -16,14 +29,87 @@
     "Regarding the national security concerns raised in news reports, NVIDIA's Board of Directors has initiated an independent investigation. I support the investigation and will cooperate fully. I love our country and our company. I am committed to protecting NVIDIA and supporting America's national security. I am proud and grateful to be an American.",
     "My family bears no responsibility for my choices. I do. Please give them privacy."
   ],
-  "published": "2026-11-08T00:00:00.000Z",
-  "digest": "这不是评论，是黄仁勋发给英伟达全体员工的原始邮件全文，7 段、约 280 词。三件事：承认婚内不忠、向家人与同事道歉并承担全部责任、就媒体报道涉及的国家安全问题表态支持董事会独立调查并全力配合。英文极简、无一句辩解，是学「正式道歉信怎么写」的范本。",
-  "points": [
-    "第一段直接认错，不给任何借口：There is no excuse for what I did",
-    "对家人、同事、董事会、股东、合作伙伴分别道歉，责任全部由自己承担",
-    "涉及国家安全的质疑不辩解，只说明支持独立调查、全力配合"
+  "translation": [
+    "英伟达创始人兼 CEO 黄仁勋今天早些时候向英伟达员工发送了以下邮件。",
+    "我对妻子不忠。我的行为伤害了她和我们的孩子。我为自己的所作所为没有任何借口。我深感抱歉。",
+    "这一生，家人给了我爱与支持。他们理应得到我的诚实与忠诚。我却让他们失望，也破坏了我们共同建立的生活。我对自己做过的事和造成的伤害承担全部责任，并接受随之而来的批评。",
+    "致我的妻子和家人：我爱你们。我知道一句道歉无法抹去我已经做过的事。我希望我们的家庭能够愈合，也希望随着时间推移，我能重新赢得你们的信任。",
+    "致我在英伟达的同事，包括与我共事数十年的伙伴，以及我们的董事会、合作伙伴和世界各地的股东：你们理应得到更好的我。领导英伟达是我一生的荣幸。我的职责是服务你们，并配得上你们的信任。我没有达到这份职责的要求。我完全忠于英伟达，并将努力重新赢得你们的信心。",
+    "关于新闻报道中提出的国家安全关切，英伟达董事会已启动独立调查。我支持这项调查，并将全力配合。我热爱我们的国家，也热爱我们的公司。我致力于保护英伟达，并支持美国的国家安全。身为美国人，我深感自豪与感激。",
+    "我的家人对我的选择不承担任何责任。承担的是我。请给他们隐私。"
   ],
-  "difficulty": "四级（句子短、用词正式）",
-  "no_digest": false,
-  "generated_at": "2026-11-24T04:57:36.297Z"
+  "analysis": {
+    "version": 2,
+    "outline": [
+      { "at": 1, "h": "第三方说明：这句话不是他说的", "note": "第一段是新闻稿的编者按，交代信件性质与时间。读英文信先分清「谁在说话」——后面六段才是作者本人的原话。" },
+      { "at": 2, "h": "开门认错，不给任何借口", "note": "三个短句走完三步：事实（I was unfaithful）→ 伤害（hurt her and our children）→ 结论（There is no excuse）。没有铺垫，也没有一个 but。" },
+      { "at": 3, "h": "把责任全部收进自己身上", "note": "从家人写到同事，再写到批评：承担责任不只是认错，还包括接受随之而来的批评（accept the criticism that comes with it）。" },
+      { "at": 4, "h": "对家人：不承诺结果，只承诺行动", "note": "I know an apology cannot undo what I have done——先承认道歉不能撤回事实，再谈「重新赢得信任」（earn back your trust），比空口保证可信。" },
+      { "at": 5, "h": "对同事与股东：把身份和义务分开", "note": "三句一组：Leading NVIDIA is the privilege（这是身份）→ My responsibility is to serve you（这是义务）→ I have fallen short of that responsibility（这是判定）。逻辑极干净。" },
+      { "at": 6, "h": "国家安全质疑：不辩解，只表态", "note": "Regarding… 一句把话题转开，随后只给三个动作：董事会启动独立调查、我支持、我全力配合。涉及法律责任时，不解释细节是最稳的写法。" },
+      { "at": 7, "h": "收尾：划清责任边界，只提一个请求", "note": "My family bears no responsibility for my choices. I do. 两个短句把边界钉死；Please give them privacy 是全篇唯一的请求，也是唯一一次向读者提要求。" }
+    ],
+    "sentences": [
+      {
+        "en": "I take full responsibility for what I did and the hurt I caused, and I accept the criticism that comes with it.",
+        "zh": "我对自己做过的事、以及造成的伤害承担全部责任，并接受随之而来的批评。",
+        "gram": "主干是两个并列句：I take … and I accept …。<b>for</b> 后面同时挂了名词性从句 what I did 和名词短语 the hurt I caused（I caused 是省略了 that 的定语从句）。<b>that comes with it</b> 修饰 criticism，指「随之而来的」。"
+      },
+      {
+        "en": "I have fallen short of that responsibility.",
+        "zh": "我没有达到那份职责的要求。",
+        "gram": "<b>fall short of</b> = 未达到（标准、期望、要求），比 fail 含蓄，也更常用于自我评价。现在完成时 have fallen 强调「至今仍然如此」，不是一次性失误。"
+      },
+      {
+        "en": "Regarding the national security concerns raised in news reports, NVIDIA's Board of Directors has initiated an independent investigation.",
+        "zh": "关于新闻报道中提出的国家安全关切，英伟达董事会已启动独立调查。",
+        "gram": "<b>Regarding …</b> 是句首状语，等于 About …，正式文书里更常用。<b>raised in news reports</b> 是过去分词短语后置修饰 concerns（= which were raised）。主干只有 Board … has initiated an investigation，一句塞进三层信息却不乱。"
+      },
+      {
+        "en": "My family bears no responsibility for my choices. I do.",
+        "zh": "我的家人对我的选择不承担任何责任。承担的是我。",
+        "gram": "<b>bear responsibility for</b> = 对……负责。<b>I do</b> 是省略式替代，do 代替 bear responsibility；英文靠助动词避免重复，中文必须补全才通顺。两个短句形成对照，是全篇最有力的一处。"
+      }
+    ],
+    "vocab": [
+      { "w": "unfaithful", "pos": "adj.", "zh": "不忠的（对伴侣）", "ex": "I was unfaithful to my wife." },
+      { "w": "excuse", "pos": "n.", "zh": "借口，理由", "ex": "There is no excuse for what I did." },
+      { "w": "criticism", "pos": "n.", "zh": "批评，指责", "ex": "I accept the criticism that comes with it." },
+      { "w": "bear", "pos": "v.", "zh": "承担（责任、后果）", "ex": "My family bears no responsibility for my choices." },
+      { "w": "fall short of", "pos": "phr.", "zh": "未达到（标准、期望）", "ex": "I have fallen short of that responsibility." },
+      { "w": "initiate", "pos": "v.", "zh": "启动（正式程序）", "ex": "The Board has initiated an independent investigation." },
+      { "w": "cooperate", "pos": "v.", "zh": "配合，协作", "ex": "I support the investigation and will cooperate fully." },
+      { "w": "privilege", "pos": "n.", "zh": "荣幸；特权", "ex": "Leading NVIDIA is the privilege of my life." },
+      { "w": "privacy", "pos": "n.", "zh": "隐私", "ex": "Please give them privacy." }
+    ],
+    "patterns": [
+      {
+        "pattern": "There is no excuse for what I did.",
+        "zh": "万能致歉开头：先封死辩解空间，再谈别的。",
+        "ex": "There is no excuse for missing the deadline, and I won't offer one."
+      },
+      {
+        "pattern": "I take full responsibility for X and the Y I caused.",
+        "zh": "承担责任要具体到「做了什么」和「造成什么后果」两件事，才不像套话。",
+        "ex": "I take full responsibility for the outage and the trust it cost us."
+      },
+      {
+        "pattern": "I have fallen short of that responsibility.",
+        "zh": "承认没做到但不解释原因——比急着找理由更有分量。",
+        "ex": "I have fallen short of the standard we set for ourselves."
+      },
+      {
+        "pattern": "I am fully committed to X and will work to earn back your confidence.",
+        "zh": "表态句式：承诺 + 具体行动，避免只说「请相信我」。",
+        "ex": "I am fully committed to this team and will work to earn back your trust."
+      }
+    ],
+    "questions": [
+      "全篇没有一句解释原因（为什么会这样）。换到中文语境里，删掉原因会让你觉得更可信，还是更可疑？",
+      "第 6 段把私人过错与国家安全质疑写进同一封信。这两件事并列处理，是加分，还是转移焦点？",
+      "作者用 earn back（重新赢回）而不是 regain（恢复）来形容信任。两个词的差别在哪，换成 regain 语气会怎么变？"
+    ]
+  },
+  "analysis_version": 2,
+  "generated_at": "2026-11-24T05:31:00.000Z"
 }

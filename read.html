@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>阅读 · Curated Reads</title>
+<meta name="description" content="英文原文全文 + 中文导读 + AI 精读。">
+<meta name="theme-color" content="#f2efe8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0d10" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316140e'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-style='italic' fill='%23f2efe8' text-anchor='middle'%3ER%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/read.css">
+<script>
+(function () {
+  try {
+    var p = JSON.parse(localStorage.getItem('cr.prefs.v2') || '{}');
+    var t = p.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'paper');
+    document.documentElement.dataset.theme = t;
+  } catch (e) { document.documentElement.dataset.theme = 'paper'; }
+})();
+</script>
+</head>
+<body>
+
+<div class="progress"><i id="bar"></i></div>
+
+<header class="rbar" id="rbar">
+  <div class="shell rbar__in">
+    <a class="rbar__back" href="./"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>首页</a>
+    <span class="rbar__title" id="rbarTitle"></span>
+    <div class="rbar__tools">
+      <button class="tool rail-toggle" id="openRail" aria-label="目录与设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <button class="tool" id="speakBtn" aria-label="朗读原文" title="朗读原文（英文）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg></button>
+      <button class="tool" data-theme-toggle data-theme-icon aria-label="切换深浅色"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg></button>
+      <button class="tool" data-open-sync aria-label="同步评分"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18a4 4 0 0 1-.5-8 6 6 0 0 1 11.6 1.5A3.5 3.5 0 0 1 17 18z"/><path d="M12 12v5M9.5 14.5 12 12l2.5 2.5"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<div class="scrim" id="railScrim"></div>
+
+<main class="shell reader">
+
+  <aside class="rail" id="rail">
+    <div class="rail__issue"><span id="railNo">No.—</span><b id="railDate"></b></div>
+
+    <p class="rail__label">本篇目录</p>
+    <ul class="toc" id="toc"></ul>
+
+    <p class="rail__label">阅读设置</p>
+    <div class="prefs">
+      <div class="pref">
+        <span>字号</span>
+        <span class="pref__seg"><button data-size="-1" aria-label="减小字号">A−</button><button data-size="1" aria-label="增大字号">A＋</button></span>
+      </div>
+      <div class="pref">
+        <span>行距</span>
+        <span class="pref__seg" id="leadSeg"><button data-lead="0">紧</button><button data-lead="1">中</button><button data-lead="2">松</button></span>
+      </div>
+      <div class="pref">
+        <span>栏宽</span>
+        <span class="pref__seg" id="measureSeg"><button data-measure="0">窄</button><button data-measure="1">中</button><button data-measure="2">宽</button></span>
+      </div>
+      <div class="pref">
+        <span>字体</span>
+        <span class="pref__seg" id="fontSeg"><button data-font="serif">衬</button><button data-font="sans">黑</button></span>
+      </div>
+      <div class="pref" id="transPref" hidden>
+        <span>逐段中文</span>
+        <span class="pref__seg" id="transSeg"><button data-trans="0">关</button><button data-trans="1">开</button></span>
+      </div>
+      <div class="pref">
+        <span>主题</span>
+        <span class="pref__seg" id="themeSeg"><button data-theme-set="paper">纸</button><button data-theme-set="night">夜</button></span>
+      </div>
+    </div>
+
+    <div class="rail__rate">
+      <p class="rail__label" style="margin-top:0">这篇值几分</p>
+      <div id="railStars"></div>
+    </div>
+  </aside>
+
+  <article class="doc" id="doc">
+    <div class="doc__head">
+      <p class="kicker">载入中…</p>
+    </div>
+  </article>
+
+</main>
+
+<footer class="foot">
+  <div class="shell foot__in">
+    <p>英文原文版权归原作者与原刊所有，页面只做学习用途的摘录与解读。中文导读由模型生成，可能失真，遇到分歧以原文为准。</p>
+    <div class="foot__meta">CURATED READS</div>
+  </div>
+</footer>
+
+<script src="assets/js/lib.js"></script>
+<script src="assets/js/repo.js"></script>
+<script src="assets/js/read.js"></script>
+</body>
+</html>
