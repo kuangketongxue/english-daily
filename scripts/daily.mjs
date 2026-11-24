@@ -21,6 +21,7 @@ const SRC = join(ROOT, 'scripts', 'sources.json');
 
 const AI_KEY = process.env.AI_API_KEY || '';
 const AI_BASE = (process.env.AI_BASE_URL || '').replace(/\/+$/, '');
+const AI_URL = AI_BASE.endsWith('/chat/completions') ? AI_BASE : `${AI_BASE}/chat/completions`;
 const AI_MODEL = process.env.AI_MODEL || 'gpt-4o-mini';
 const GH_TOKEN = process.env.GITHUB_TOKEN || '';
 const TARGET_DATE = String(process.env.TARGET_DATE || '').trim();
@@ -101,12 +102,34 @@ async function gather() {
   return all;
 }
 
+// 热点信号：先按「当下最容易被讨论的题材」给标题与摘要加权，
+// 再让站点权重兜底。纯杂志散文永远排在爆款公开信后面 —— 这是本人 2026-11-24 的要求。
+const HOT = [
+  [/\b(resign|resignation|steps down|ousted)\b/i, 26],
+  [/\b(apolog|apology|sorry|open letter|letter to)\b/i, 26],
+  [/\b(nvidia|jensen huang|openai|anthropic|sam altman|apple|tim cook|tesla|musk)\b/i, 22],
+  [/\b(layoff|layoffs|shut down|bankrupt|crisis|collapse)\b/i, 16],
+  [/\b(ai|artificial intelligence|model|chip|gpu|agent)\b/i, 12],
+  [/\b(ceo|founder|board|shareholder|investor)\b/i, 10],
+];
+function hotScore(x) {
+  const hay = `${x.title} ${x.excerpt}`;
+  let s = 0;
+  for (const [re, w] of HOT) if (re.test(hay)) s += w;
+  // 新鲜度：48 小时内每早 1 小时 +0.5 分，最多 24 分 —— 保证「最新最前沿」优先于旧文
+  const h = (Date.now() - x.ts) / 3600e3;
+  if (h >= 0 && h < 48) s += (48 - h) * 0.5;
+  return s;
+}
+
 function extractBody(html) {
   const art = html.match(/<article[\s\S]*?<\/article>/i);
   let block = art ? art[0] : html.replace(/<(nav|header|footer|aside)[\s\S]*?<\/\1>/gi, ' ');
-  const paras = [...block.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)].map(m => strip(m[1])).filter(p => p.length > 60);
+  const paras = [...block.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)]
+    .map(m => strip(m[1]))
+    .filter(p => p.length > 60 && englishRatio(p) > 0.55);
   const text = paras.join('\n');
-  return { text, words: (text.match(/\b[A-Za-z][A-Za-z'-]*\b/g) || []).length };
+  return { text, paras: paras.slice(0, 60), words: (text.match(/\b[A-Za-z][A-Za-z'-]*\b/g) || []).length };
 }
 
 async function ask(prompt) {
@@ -115,7 +138,7 @@ async function ask(prompt) {
     { role: 'user', content: prompt },
   ];
   if (AI_KEY && AI_BASE) {
-    const r = await fetch(`${AI_BASE}/chat/completions`, {
+    const r = await fetch(AI_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${AI_KEY}` },
       body: JSON.stringify({ model: AI_MODEL, messages, temperature: 0.4 }),
@@ -143,6 +166,7 @@ function rebuildIndex() {
     .map(p => ({
       date: p.date, title: p.title, title_zh: p.title_zh, source: p.source,
       link: p.link, minutes: p.minutes, words: p.words, excerpt: p.excerpt,
+      published: p.published || '',
       digest: p.digest, points: p.points || [], difficulty: p.difficulty || '',
     }));
   mkdirSync(DATA, { recursive: true });
@@ -173,7 +197,8 @@ async function main() {
     .filter(x => !history.has(x.link))
     .filter(x => englishRatio(x.title) > 0.6)
     .filter(x => now - x.ts <= MAX_AGE_H * 3600e3)
-    .sort((a, b) => (b.weight - a.weight) || (b.ts - a.ts))
+    .map(x => ({ ...x, heat: hotScore(x) }))
+    .sort((a, b) => (b.heat - a.heat) || (b.weight - a.weight) || (b.ts - a.ts))
     .slice(0, 14);
   log(`候选 ${candidates.length} 篇（72 小时内、未写过）`);
   if (!candidates.length) throw new Error('没有可用候选：源站全部无新文或都已写过');
@@ -182,9 +207,9 @@ async function main() {
   for (const c of candidates) {
     try {
       const html = await get(c.link, 30000);
-      const { text, words } = extractBody(html);
+      const { text, paras, words } = extractBody(html);
       if (words < MIN_WORDS) { log(`  - 跳过 ${c.source}｜${words} 词，不足 ${MIN_WORDS}`); continue; }
-      chosen = { ...c, text, words, minutes: Math.max(3, Math.round(words / 230)) };
+      chosen = { ...c, text, paras, words, minutes: Math.max(3, Math.round(words / 230)) };
       log(`  ✓ 选中 ${c.source}｜${words} 词｜约 ${chosen.minutes} 分钟：${c.title}`);
       break;
     } catch (e) {
@@ -212,6 +237,8 @@ async function main() {
     words: chosen.words,
     minutes: chosen.minutes,
     excerpt: chosen.excerpt,
+    body: chosen.paras,
+    published: new Date(chosen.ts).toISOString(),
     digest: meta.digest || '',
     points: Array.isArray(meta.points) ? meta.points.slice(0, 5) : [],
     difficulty: meta.difficulty || '',
