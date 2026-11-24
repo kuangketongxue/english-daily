@@ -100,7 +100,8 @@ function heroCard(it) {
       ${it.words ? `<span class="tag">${it.words} 词</span>` : ''}
       ${it.difficulty ? `<span class="tag">${it.difficulty}</span>` : ''}
     </div>
-    ${it.digest ? `<p class="digest">${it.digest}</p>` : `<p class="digest">${it.excerpt || ''}</p>`}
+    <div class="src-line">原文出处：<a href="${it.link}" target="_blank" rel="noopener">${it.source}</a>${when ? ` · 原文发表于 ${when}` : ''}</div>
+    ${it.digest ? `<p class="dlab">中文导读 · 我的解读，不是原文</p><p class="digest">${it.digest}</p>` : `<p class="digest">${it.excerpt || ''}</p>`}
     ${it.points && it.points.length ? `<ul class="points">${it.points.map(p => `<li>${p}</li>`).join('')}</ul>` : ''}
     <div class="acts">
       ${starsHtml(it.date)}
