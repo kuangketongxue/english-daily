@@ -123,11 +123,35 @@ const HOT = [
   [/\b(ai|artificial intelligence|model|chip|gpu|agent)\b/i, 12],
   [/\b(ceo|founder|board|shareholder|investor)\b/i, 10],
 ];
+// 个性化：读 data/ratings.json，按「同一来源历史平均分」给候选加权。
+// 5 分常看 → ×1.4，1 分 → ×0.6；没打过分的来源保持原样。
+function sourceBias() {
+  try {
+    const r = JSON.parse(readFileSync(join(DATA, 'ratings.json'), 'utf8'));
+    const by = {};
+    const posts = existsSync(POSTS) ? readdirSync(POSTS).filter(f => f.endsWith('.json')) : [];
+    const src = {};
+    for (const f of posts) { try { const p = JSON.parse(readFileSync(join(POSTS, f), 'utf8')); src[p.date] = p.source; } catch {} }
+    for (const [d, v] of Object.entries(r.ratings || {})) {
+      const s = src[d]; if (!s || !v) continue;
+      (by[s] = by[s] || []).push(Number(v));
+    }
+    const out = {};
+    for (const [s, arr] of Object.entries(by)) {
+      const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
+      out[s] = 0.6 + (avg - 1) * 0.2;      // 1→0.6, 3→1.0, 5→1.4
+    }
+    return out;
+  } catch { return {}; }
+}
+
 function hotScore(x) {
   const hay = `${x.title} ${x.excerpt}`;
   let s = 0;
   for (const [re, w] of HOT) if (re.test(hay)) s += w;
   const host = hostOf(x.link);
+  const bias = globalThis.__bias?.[x.source] ?? 1;
+  s *= bias;
   for (const [re, w] of DOMAIN_BOOST) if (re.test(host)) s += w;
   // 新鲜度：48 小时内每早 1 小时 +0.5 分，最多 24 分 —— 保证「最新最前沿」优先于旧文
   const h = (Date.now() - x.ts) / 3600e3;
@@ -293,6 +317,8 @@ async function main() {
 
   const history = new Set(existsSync(HIST) ? JSON.parse(readFileSync(HIST, 'utf8')) : []);
   const now = Date.now();
+  globalThis.__bias = sourceBias();
+  if (Object.keys(globalThis.__bias).length) log('  个性化权重：' + Object.entries(globalThis.__bias).map(([k, v]) => `${k}×${v.toFixed(2)}`).join(' / '));
   const [feedItems, webItems] = await Promise.all([gather(), gatherWeb()]);
   const candidates = [...webItems, ...feedItems]
     .filter(x => !history.has(x.link))

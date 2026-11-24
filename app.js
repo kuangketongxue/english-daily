@@ -27,6 +27,41 @@ function ago(iso) {
   return `${Math.round(h / 24)} 天前`;
 }
 
+
+// ── 评分归档：把本机评分写回仓库 data/ratings.json ──
+// 站点是纯静态，只能在浏览器里用你自己的 GitHub 令牌提交（令牌只存在本机 localStorage）。
+const TOKEN_KEY = 'cr:gh-token';
+async function pushRatings() {
+  let token = localStorage.getItem(TOKEN_KEY);
+  if (!token) {
+    token = prompt('粘贴一个有本仓库 contents:write 权限的 GitHub 令牌（只存本机）：');
+    if (!token) return;
+    localStorage.setItem(TOKEN_KEY, token.trim());
+  }
+  const api = 'https://api.github.com/repos/kuangketongxue/english-daily/contents/data/ratings.json';
+  const h = { Authorization: 'Bearer ' + token.trim(), Accept: 'application/vnd.github+json' };
+  let sha = null, old = { ratings: {}, favs: [] };
+  try {
+    const r = await fetch(api, { headers: h });
+    if (r.ok) { const j = await r.json(); sha = j.sha;
+      try { old = JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))))); } catch {} }
+  } catch {}
+  const merged = {
+    updated: new Date().toISOString().slice(0, 10),
+    ratings: { ...(old.ratings || {}), ...ratings },
+    favs: [...new Set([...(old.favs || []), ...favs])],
+  };
+  const body = {
+    message: '更新评分 ' + merged.updated,
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(merged, null, 2)))),
+    ...(sha ? { sha } : {}),
+  };
+  const r = await fetch(api, { method: 'PUT', headers: { ...h, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const btn = document.getElementById('sync');
+  if (btn) btn.textContent = r.ok ? '已同步 ✓' : '同步失败';
+  setTimeout(() => { if (btn) btn.textContent = '同步评分到仓库'; }, 2500);
+}
+
 function starsHtml(date) {
   const n = ratings[date] || 0;
   return `<div class="stars" data-date="${date}">${[1, 2, 3, 4, 5]
@@ -71,6 +106,7 @@ function heroCard(it) {
       ${starsHtml(it.date)}
       <button class="btn fav" data-date="${it.date}">${favs.has(it.date) ? '已收藏' : '收藏'}</button>
       <a class="btn" href="${it.link}" target="_blank" rel="noopener">看原站</a>
+      <button class="btn" id="sync">同步评分到仓库</button>
     </div>
     ${body ? `<div class="full" data-full>
       <h3>English original</h3>
@@ -157,4 +193,5 @@ async function main() {
   });
 }
 
+document.addEventListener('click', (e) => { if (e.target.id === 'sync') pushRatings(); });
 main();
