@@ -276,7 +276,7 @@ function psSearch(query) {
           resolve((j.results || []).map(r => ({
             source: hostOf(r.url || r.link || '') || 'web', weight: 12,
             title: r.title || '', link: r.url || r.link || '',
-            excerpt: r.description || r.snippet || r.text || '', ts: Date.now(), viaSearch: true,
+            excerpt: r.description || r.snippet || r.text || '', ts: 0, viaSearch: true,
           })).filter(x => x.link && x.title));
         } catch (e) { resolve([]); }
       });
@@ -347,8 +347,8 @@ async function main() {
           log(`  ↑ ${c.source} 静态抓取只有 ${words} 词，Firecrawl 渲染后 ${w2} 词`);
           // 渲染页常常没有 meta 时间，退回正文里那句 "November 8, 2026"
           const mdDate = md.match(/([A-Z][a-z]{2,8}\s+\d{1,2},\s+20\d{2})/);
-          const ts2 = pageDate(html) || (mdDate ? Date.parse(mdDate[1]) : c.ts);
-          if ((Date.now() - ts2) / 3600e3 > maxAge) {
+          const ts2 = pageDate(html) || (mdDate ? Date.parse(mdDate[1]) : (c.viaSearch ? 0 : c.ts));
+          if (ts2 > 0 && (Date.now() - ts2) / 3600e3 > maxAge) {
             log(`  - 跳过 ${c.source}｜渲染页日期 ${new Date(ts2).toISOString().slice(0, 10)}，超出 ${MAX_AGE_H} 小时`);
             continue;
           }
@@ -360,8 +360,8 @@ async function main() {
         continue;
       }
       const realTs = pageDate(html);
-      const real = realTs || c.ts;
-      if ((Date.now() - real) / 3600e3 > maxAge) {
+      const real = realTs || (c.viaSearch ? 0 : c.ts);
+      if (real > 0 && (Date.now() - real) / 3600e3 > maxAge) {
         log(`  - 跳过 ${c.source}｜正文日期 ${new Date(real).toISOString().slice(0, 10)}，超出 ${MAX_AGE_H} 小时`);
         continue;
       }
@@ -394,7 +394,7 @@ async function main() {
     minutes: chosen.minutes,
     excerpt: chosen.excerpt,
     body: chosen.paras,
-    published: new Date(chosen.ts).toISOString(),
+    published: chosen.ts ? new Date(chosen.ts).toISOString() : '',
     digest: meta.digest || '',
     points: Array.isArray(meta.points) ? meta.points.slice(0, 5) : [],
     difficulty: meta.difficulty || '',
