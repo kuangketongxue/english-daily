@@ -247,6 +247,7 @@ function rebuildIndex() {
       date: p.date, title: p.title, title_zh: p.title_zh, source: p.source,
       link: p.link, minutes: p.minutes, words: p.words, excerpt: p.excerpt,
       published: p.published || '',
+      body: p.body || [],
       digest: p.digest, points: p.points || [], difficulty: p.difficulty || '',
     }));
   mkdirSync(DATA, { recursive: true });
@@ -353,7 +354,12 @@ async function main() {
         continue;
       }
       const realTs = pageDate(html);
-      chosen = { ...c, text, paras, words, ts: realTs || c.ts, minutes: Math.max(3, Math.round(words / 230)) };
+      const real = realTs || c.ts;
+      if ((Date.now() - real) / 3600e3 > MAX_AGE_H) {
+        log(`  - 跳过 ${c.source}｜正文日期 ${new Date(real).toISOString().slice(0, 10)}，超出 ${MAX_AGE_H} 小时`);
+        continue;
+      }
+      chosen = { ...c, text, paras, words, ts: real, minutes: Math.max(3, Math.round(words / 230)) };
       log(`  ✓ 选中 ${c.source}｜${words} 词｜约 ${chosen.minutes} 分钟：${c.title}`);
       break;
     } catch (e) {
