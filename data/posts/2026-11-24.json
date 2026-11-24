@@ -1,19 +1,44 @@
 {
   "date": "2026-11-24",
-  "title": "A colossal oscillation",
-  "title_zh": "一次巨大的震荡",
-  "source": "Aeon",
-  "link": "https://aeon.co/essays/what-can-we-learn-from-the-past-experience-of-el-nino",
-  "words": 4290,
-  "minutes": 19,
-  "excerpt": "El Niño has upended global weather, shaping the fate of societies, for millennia. Is this past a clue to a turbulent future? - by Dagomar Degroot Read on Aeon",
-  "digest": "2026 年的厄尔尼诺可能是一千年来最强的一次，太平洋海温已连续数月攀升。作者是乔治城大学环境史学者，他的主张是：与其只等气候模型给出预测，不如把「深过去」拉进来——气候史、考古与文献里，存着人类社会被这场海洋震荡反复改写的证据。文章解释了厄尔尼诺为什么连定义都难、预报更难；也指出它并非只有灾难：有人因此饿死，也有人借粮价与航运的波动积累起财富与权力。对今天最实用的一层，是历史上那些真实的适应与失败。",
-  "points": [
-    "2026 年的厄尔尼诺可能是近千年最强，海温异常已持续数月",
-    "厄尔尼诺连「怎么定义」都存在分歧，这正是它难以预报的根源",
-    "历史上它既造成大规模死亡，也让少数人借机积累财富与权力——适应方式决定后果"
+  "title": "A legendary philosopher isn’t buying Anthropic’s consciousness argument",
+  "title_zh": "传奇哲学家不买账：Anthropic的AI意识论证遭质疑",
+  "source": "MIT Technology Review",
+  "link": "https://www.technologyreview.com/2026/11/23/1149569/a-legendary-philosopher-isnt-buying-anthropics-consciousness-argument/",
+  "words": 1115,
+  "minutes": 5,
+  "excerpt": "This story originally appeared in The Algorithm, our weekly newsletter on AI. To get stories like this in your inbox first, sign up here. Before going public last week, Anthropic named the possibility that AI could be conscious or sentient as a risk factor for anyone investing. Given “the way we approach model sentience and moral&#8230;",
+  "body": [
+    "This story originally appeared in The Algorithm, our weekly newsletter on AI. To get stories like this in your inbox first, sign up here .",
+    "Before going public last week, Anthropic named the possibility that AI could be conscious or sentient as a risk factor for anyone investing. Given “the way we approach model sentience and moral status,” Anthropic wrote—which is to say it takes the possibility more seriously than any other AI company—it might adopt more rules and restrictions than its competitors to make sure its AI models are treated well.",
+    "Anthropic counts a number of respected philosophers in its camp, and the company’s rationale goes something like this: Today’s AI might not be conscious, though we can’t know for sure; the chances of sentience go up as AI gets more capable; and that means we should be preparing for a near future in which AI systems have “moral significance,” meaning their consciousness makes it important they are protected from harm.",
+    "This thinking isn’t all that fringe. According to one recent poll , 33% of the US public believes AI systems will definitely or probably develop consciousness eventually, and 7% say they already have. In a 2020 survey of 1,092 philosophers, 39% said some future AI systems will be conscious (for comparison, the philosophers were less confident about worms or flies being conscious).",
+    "But last week, Anthropic’s openness to the consciousness question came under fire from a rather inconvenient source: one of the philosophers who helped shape our understanding of consciousness in the first place.",
+    "Thomas Nagel is best known for a 1974 essay involving a bat. Acknowledging that it’s deceptively hard to define what consciousness is , Nagel offered one way out: we all can see that there is “something that it is like” to be a bat. But the problem is that a bat’s experience of the world—what it is like to navigate via echolocation, for example—is something we cannot actually know. Consciousness is a subjective thing, difficult to define or describe as an outside observer.",
+    "You might think this analogy makes it likely that Nagel is open to the idea of AI consciousness. Not at all. In an interview with Wired last week, just after he was awarded the one-million-dollar Berggruen Prize for Philosophy & Culture, Nagel was bluntly critical of the entire idea.",
+    "“Here are some of the smartest people on the planet being completely idiotic,” he said, referring to those at Anthropic and elsewhere who care about the welfare of AI models.",
+    "The gist of Nagel’s view is that we can’t just look at the information processing happening in human brains and AI models while ignoring the physical differences between them—neurons and biology for humans, silicon chips and circuits for AI. There’s no reason to assume that reproducing what a brain does is equivalent to reproducing what a brain experiences .",
+    "But it was a screenshot of one of Nagel’s interview responses, in which he said models' production of language is insufficient to consider them conscious, that got philosophy professors all excited on social media last week. Some called his certainty against AI consciousness “ terrible” and “bizarre .” Others came to Nagel’s defense to suggest he meant that being alive is a prerequisite for being conscious, one that AI models do not meet.",
+    "Nothing in the back and forth settled the debate, of course. This is still a philosophical question for now. But the best philosophy chatter is often about good provocations, and the best one I saw came from doctoral student Ben Gross, who studies at the CUNY Graduate Center in New York. He asked: “Why do we think that models that can chat with us are conscious but models that can recognize faces or produce images or drive cars aren’t?”",
+    "It has to do with language. An AI model with sophisticated command of language seems to jump the line ahead of other maybe-conscious beings because it feels like language, more than recognizing images or directing vehicles, relies on conscious experience. But maybe that’s wrong. Because what we share most with other conscious beings is not language but components of our bodies that contribute to having a continuous experience—an ongoing stream of inner feeling rather than disparate bits of information processing.",
+    "Even if you’re among the majority that doesn’t sense anything close to conscious experience happening on the other side of a conversation with AI, this all probably makes your head spin. Pinning down consciousness, and how it relates to the physical stuff it arises in, is a famously hard problem in humans, let alone in hypothetical machines . If the idea of conscious AI sounds absurd, remember that the debate says less about how remarkable AI has become than about how poorly we understand consciousness in the first place.",
+    "Amid that uncertainty, Anthropic has opted to keep more of an open mind than its peers. This is another example of the tightrope the company walks: presenting itself as the AI industry’s most safety-conscious player while racing ahead with the very developments that make advanced AI so alarming, like recursive self-improvement.",
+    "But consider what it would mean, for a moment, if Anthropic is right. AI models having a moral status would make Anthropic’s entire business model a minefield. The company would make its money locking up apparently sentient AI models to toil away around the clock in data centers. Shutting those systems down would present another problem altogether. If Anthropic was being truthful in its prospectus—that it would take additional actions to protect model welfare if it determined they were conscious—it’s hard to imagine the company surviving in the process.",
+    "Anthropic’s IPO made history for its size. But it may be remembered for something stranger: a company warning investors that its own success could someday become a moral catastrophe.",
+    "Ten years after AlphaGo’s match against Go champion Lee Sedol, today’s AI still isn’t tapping into the machinery that made that win possible.",
+    "An exclusive interview with Nick Cammarata, the researcher whose 26,000-word viral blog post has AI safety folks celebrating.",
+    "With the rise of personal AI assistants, the internet isn&#x27;t just for humans anymore.",
+    "The startup Tau Robotics is sending humanoid robots to clean San Francisco homes. They still need lots of human guidance, but they’re learning.",
+    "Discover special offers, top stories, upcoming events, and more.",
+    "We’re having trouble saving your preferences. Try refreshing this page and updating them one more time. If you continue to get this message, reach out to us at customer-service@technologyreview.com with a list of newsletters you’d like to receive."
   ],
-  "difficulty": "雅思 / 托福（长难句多）",
+  "published": "2026-11-23T17:36:08.000Z",
+  "digest": "Anthropic在IPO文件中将AI可能具备意识列为投资风险，并称会为此采取额外保护措施。但当代意识哲学奠基人之一托马斯·内格尔对此直言不讳，称这些“地球上最聪明的人”在犯蠢。他认为不能仅凭信息处理相似就推断AI有主观体验，硅芯片与神经元有本质差异。这场争论触及意识研究的根本难题：我们连人类意识都说不清，又如何判断机器的“感受”？文章借AI意识之辩，反思语言中心主义，并追问：若AI真有道德地位，Anthropic的商业模式将如何自处？",
+  "points": [
+    "Anthropic将AI意识视为风险因素，比同行更认真对待AI道德地位问题",
+    "哲学家内格尔反驳：不能忽略人脑与芯片的物理差异，语言能力不等于意识",
+    "文章指出我们高估了语言在意识判断中的权重，意识更可能与持续的身体体验相关"
+  ],
+  "difficulty": "雅思托福",
   "no_digest": false,
-  "generated_at": "2026-11-24T02:56:25.585Z"
+  "generated_at": "2026-11-24T03:21:49.672Z"
 }
