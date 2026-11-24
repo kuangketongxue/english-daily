@@ -1,0 +1,73 @@
+name: daily-pick
+
+on:
+  schedule:
+    # 目标：北京 07:00 之前有新文章。GitHub 的 schedule 会迟到 3~10 小时，还会整段丢失
+    # （2026-11-23 万星日报全天 7 批一次没到），所以：① 早间窗口多排几批；
+    # ② 脚本自带 pickTarget，任何一批真的到达时都会把最近 3 天的缺期补上。
+    - cron: "0 16 * * *"    # 北京 00:00（主力）
+    - cron: "0 18 * * *"    # 北京 02:00
+    - cron: "30 20 * * *"   # 北京 04:30
+    - cron: "30 21 * * *"   # 北京 05:30
+    - cron: "30 23 * * *"   # 北京 07:30 兜底
+    - cron: "0 2 * * *"     # 北京 10:00 补跑
+    - cron: "0 11 * * *"    # 北京 19:00 当天最后一次
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 要补的日期 YYYY-MM-DD（留空＝今天；今天已有则补最近缺期）
+        type: string
+        default: ""
+      dry_run:
+        description: 只跑选品与写稿，不写入、不提交
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  models: read      # 没有自备 AI_API_KEY 时用 GitHub Models 生成中文导读
+
+concurrency:
+  group: daily-pick
+  cancel-in-progress: false
+
+jobs:
+  pick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: 选品 + 写中文导读
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          # 可选：填了就用自己的模型；不填走 GitHub Models
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          AI_BASE_URL: ${{ secrets.AI_BASE_URL }}
+          AI_MODEL: ${{ secrets.AI_MODEL }}
+          TARGET_DATE: ${{ github.event.inputs.date || '' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: node scripts/daily.mjs
+
+      - name: 提交数据变更
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "无变更，跳过提交"
+            exit 0
+          fi
+          git commit -m "daily read $(TZ=Asia/Shanghai date +%F)"
+          for i in 1 2 3; do
+            git pull --rebase && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            echo "推送失败，第 $i 次重试"
+            sleep 5
+          done
+          exit 1

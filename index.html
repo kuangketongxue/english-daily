@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Curated Reads · 每日一篇英文长文</title>
+<meta name="description" content="每天一篇英文长文精选，附中文导读。只收英文原文，优先最新。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Curated Reads</h1>
+    <p class="sub">每天一篇英文长文 · 附中文导读 · <span id="today"></span></p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="hero" class="hero" hidden></section>
+
+  <section class="filters">
+    <button class="chip on" data-filter="all">全部</button>
+    <button class="chip" data-filter="week">近七篇</button>
+  </section>
+
+  <section id="list" class="list"></section>
+
+  <p id="empty" class="empty" hidden>还没有内容。生成脚本跑过一次之后，这里会出现第一天。</p>
+
+  <footer class="foot">
+    <p>选品来自公开 RSS（Aeon / Works in Progress / The Atlantic / Nautilus / Quanta 等），只保留英文原文链接；中文导读由模型生成，可能失真，以原文为准。</p>
+  </footer>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
