@@ -106,6 +106,15 @@ async function gather() {
 
 // 热点信号：先按「当下最容易被讨论的题材」给标题与摘要加权，
 // 再让站点权重兜底。纯杂志散文永远排在爆款公开信后面 —— 这是本人 2026-11-24 的要求。
+// 域名与体裁：官方 newsroom 最高分，主流媒体次之，UGC 与“范本/教程”类直接降权或丢弃
+const DOMAIN_BOOST = [
+  [/(nvidianews\.nvidia\.com|blogs\.nvidia\.com|openai\.com|anthropic\.com|blog\.google|apple\.com|microsoft\.com|about\.fb\.com|meta\.com|tesla\.com|amazon\.com|stripe\.com|shopify\.com)$/i, 70],
+  [/(nytimes|bloomberg|wsj\.com|ft\.com|reuters|apnews|theverge|techcrunch|wired|economist|newyorker|theatlantic|axios|cnbc|fortune|businessinsider|economictimes|livemint|scmp|nikkei|theinformation)/i, 30],
+  [/(medium\.com|substack\.com|linkedin\.com|reddit\.com|quora|facebook\.com|x\.com|twitter\.com|youtube\.com)/i, -30],
+];
+const LISTICLE = /\b(examples?|templates?|sample letters?|how to write|best \d+|top \d+|a guide to writing|tips for)\b/i;
+function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } }
+
 const HOT = [
   [/\b(resign|resignation|steps down|ousted)\b/i, 26],
   [/\b(apolog|apology|sorry|open letter|letter to)\b/i, 26],
@@ -118,6 +127,8 @@ function hotScore(x) {
   const hay = `${x.title} ${x.excerpt}`;
   let s = 0;
   for (const [re, w] of HOT) if (re.test(hay)) s += w;
+  const host = hostOf(x.link);
+  for (const [re, w] of DOMAIN_BOOST) if (re.test(host)) s += w;
   // 新鲜度：48 小时内每早 1 小时 +0.5 分，最多 24 分 —— 保证「最新最前沿」优先于旧文
   const h = (Date.now() - x.ts) / 3600e3;
   if (h >= 0 && h < 48) s += (48 - h) * 0.5;
@@ -208,7 +219,7 @@ function psSearch(query) {
         try {
           const j = JSON.parse(readFileSync(out, 'utf8'));
           resolve((j.results || []).map(r => ({
-            source: r.source || 'web', weight: 12,
+            source: hostOf(r.url || r.link || '') || 'web', weight: 12,
             title: r.title || '', link: r.url || r.link || '',
             excerpt: r.description || r.snippet || r.text || '', ts: Date.now(), viaSearch: true,
           })).filter(x => x.link && x.title));
@@ -226,6 +237,7 @@ async function gatherWeb() {
     seen.add(x.link);
     // 搜索结果的标题多是中文站转载，只留英文标题的页面
     if (englishRatio(x.title) < 0.5) continue;
+    if (LISTICLE.test(x.title)) continue;   // 范本/教程/清单类不是新闻
     out.push(x);
   }
   log(`  全网搜索补充 ${out.length} 条（英文标题）`);
