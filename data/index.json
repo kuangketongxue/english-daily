@@ -3,19 +3,19 @@
   "issues": [
     {
       "date": "2026-11-24",
-      "title": "A legendary philosopher isn’t buying Anthropic’s consciousness argument",
-      "title_zh": "传奇哲学家不买账：Anthropic的AI意识论证遭质疑",
-      "source": "MIT Technology Review",
-      "link": "https://www.technologyreview.com/2026/11/23/1149569/a-legendary-philosopher-isnt-buying-anthropics-consciousness-argument/",
-      "minutes": 5,
-      "words": 1115,
-      "excerpt": "This story originally appeared in The Algorithm, our weekly newsletter on AI. To get stories like this in your inbox first, sign up here. Before going public last week, Anthropic named the possibility that AI could be conscious or sentient as a risk factor for anyone investing. Given “the way we approach model sentience and moral&#8230;",
-      "published": "2026-11-23T17:36:08.000Z",
-      "digest": "Anthropic在IPO文件中将AI可能具备意识列为投资风险，并称会为此采取额外保护措施。但当代意识哲学奠基人之一托马斯·内格尔对此直言不讳，称这些“地球上最聪明的人”在犯蠢。他认为不能仅凭信息处理相似就推断AI有主观体验，硅芯片与神经元有本质差异。这场争论触及意识研究的根本难题：我们连人类意识都说不清，又如何判断机器的“感受”？文章借AI意识之辩，反思语言中心主义，并追问：若AI真有道德地位，Anthropic的商业模式将如何自处？",
+      "title": "CEO Apology Letter Examples That You Can Actually Use",
+      "title_zh": "可实际使用的CEO道歉信范例",
+      "source": "firecrawl:1",
+      "link": "https://csuitecontent.com/ceo-apology-letter-examples-that-you-can-actually-use/",
+      "minutes": 9,
+      "words": 1987,
+      "excerpt": "> When the crisis is the leader’s own conduct or judgment, the apology can’t hide behind the company. It has to be personal, name the harm without minimizing it, and never include the word “if” — no “I’m sorry if anyone was offended.” This is the scenario where deflection does the most damage and genuine ownership does the most good.\n>\n> To our employees, customers, and community,\n> [...] Below are five complete CEO apology letters, each built for a distinct crisis and ready to adapt. First, a quick look at what separates a real apology from a hollow one.\n\n## What Makes a CEO Apology Letter Work\n\nThe best apologies share a spine. They open with a direct acknowledgment of what went wrong — no passive-voice fog, no “mistakes were made.” They accept responsibility outright instead of deflecti",
+      "published": "2026-08-25T23:12:30.000Z",
+      "digest": "本文以CrowdStrike CEO在系统宕机当天迅速公开道歉为例，剖析了CEO道歉信的核心要素：直接承认错误、主动承担责任、给出具体补救措施、使用人性化语气。通过对比T-Mobile与Netflix的案例，说明时机和态度决定成败。文章随后提供五套完整模板，覆盖服务中断、数据泄露、个人失言、裁员和业绩不及预期等典型危机场景，并强调道歉信应体现领导者的个人信誉，而非仅公司品牌。适合需要危机沟通指南的管理者阅读。",
       "points": [
-        "Anthropic将AI意识视为风险因素，比同行更认真对待AI道德地位问题",
-        "哲学家内格尔反驳：不能忽略人脑与芯片的物理差异，语言能力不等于意识",
-        "文章指出我们高估了语言在意识判断中的权重，意识更可能与持续的身体体验相关"
+        "有效道歉的四个核心：直接承认、承担责任、具体补救、人性化语气",
+        "对比案例：T-Mobile的及时道歉与Netflix的辩解式回应，说明时机和态度的重要性",
+        "五套场景模板：服务中断、数据泄露、个人失言、裁员、业绩不佳，每套都附有结构建议"
       ],
       "difficulty": "雅思托福"
     }
