@@ -113,6 +113,8 @@ const DOMAIN_BOOST = [
   [/(nvidianews\.nvidia\.com|blogs\.nvidia\.com|openai\.com|anthropic\.com|blog\.google|apple\.com|microsoft\.com|about\.fb\.com|meta\.com|tesla\.com|amazon\.com|stripe\.com|shopify\.com)$/i, 70],
   [/(nytimes|bloomberg|wsj\.com|ft\.com|reuters|apnews|theverge|techcrunch|wired|economist|newyorker|theatlantic|axios|cnbc|fortune|businessinsider|economictimes|livemint|scmp|nikkei|theinformation)/i, 30],
   [/(medium\.com|substack\.com|linkedin\.com|reddit\.com|quora|facebook\.com|x\.com|twitter\.com|youtube\.com)/i, -30],
+  // 二手聚合/转载站：标题里常有 "Read full letter"、正文是别人的稿子，2026-11-24 用户明确要求只收一手
+  [/(techdogs|gasgoo|futunn|autonews|indiatimes|livemint|firstpost|news18|zeenews|sohu|163\.com|sina|toutiao|36kr|jiemian|thepaper)/i, -60],
 ];
 const LISTICLE = /\b(examples?|templates?|sample letters?|how to write|best \d+|top \d+|a guide to writing|tips for)\b/i;
 function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } }
