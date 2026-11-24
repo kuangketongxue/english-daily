@@ -116,6 +116,7 @@ const DOMAIN_BOOST = [
   // 二手聚合/转载站：标题里常有 "Read full letter"、正文是别人的稿子，2026-11-24 用户明确要求只收一手
   [/(techdogs|gasgoo|futunn|autonews|indiatimes|livemint|firstpost|news18|zeenews|sohu|163\.com|sina|toutiao|36kr|jiemian|thepaper)/i, -60],
 ];
+const SECONDHAND = /(techdogs|gasgoo|futunn|autonews|indiatimes|livemint|firstpost|news18|zeenews|sohu|163\.com|sina\.|toutiao|36kr|jiemian|thepaper|qq\.com|ifeng)/i;
 const LISTICLE = /\b(examples?|templates?|sample letters?|how to write|best \d+|top \d+|a guide to writing|tips for)\b/i;
 function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } }
 
@@ -297,6 +298,8 @@ async function gatherWeb() {
     // 搜索结果的标题多是中文站转载，只留英文标题的页面
     if (englishRatio(x.title) < 0.5) continue;
     if (LISTICLE.test(x.title)) continue;   // 范本/教程/清单类不是新闻
+    // 二手转载站直接丢：2026-11-24 用户要求「只要一手优质」，转载稿的日期和措辞都不可信
+    if (SECONDHAND.test(hostOf(x.link))) continue;
     out.push(x);
   }
   log(`  全网搜索补充 ${out.length} 条（英文标题）`);
