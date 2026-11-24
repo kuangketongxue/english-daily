@@ -387,7 +387,12 @@ async function main() {
         let raw = (og ? og[1] : (tg ? tg[1] : '')).trim();
         const cut = raw.replace(/\s*[|｜]\s*.*$/, '').trim();
         title = cut.length >= 8 ? cut : raw;
-        if (!title) title = c.link;
+        if (!title) {
+          // 兜底：渲染页的 H1（Firecrawl 的 markdown 第一行）
+          const md3 = await firecrawlMarkdown(c.link);
+          const h1 = (md3.match(/^#\s+(.+)$/m) || [])[1];
+          title = h1 ? h1.trim() : c.link;
+        }
       }
       chosen = { ...c, title, text, paras, words, ts: real, minutes: Math.max(3, Math.round(words / 230)) };
       log(`  ✓ 选中 ${c.source}｜${words} 词｜约 ${chosen.minutes} 分钟：${c.title}`);
