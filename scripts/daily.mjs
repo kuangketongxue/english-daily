@@ -336,7 +336,9 @@ async function main() {
     try {
       const html = await get(c.link, 30000);
       const { text, paras, words } = extractBody(html);
-      const minOk = /newsroom|nvidia|openai|anthropic|apple|microsoft|meta\.com|tesla/i.test(hostOf(c.link)) ? 250 : MIN_WORDS;
+      const official = /newsroom|nvidia|openai|anthropic|apple|microsoft|meta\.com|tesla/i.test(hostOf(c.link));
+      const minOk = official ? 250 : MIN_WORDS;
+      const maxAge = official ? 14 * 24 : MAX_AGE_H;   // 官方信件的价值在内容不在时效
       if (words < minOk) {
         const md = await firecrawlMarkdown(c.link);
         const p2 = md ? mdToParas(md) : [];
@@ -346,7 +348,7 @@ async function main() {
           // 渲染页常常没有 meta 时间，退回正文里那句 "November 8, 2026"
           const mdDate = md.match(/([A-Z][a-z]{2,8}\s+\d{1,2},\s+20\d{2})/);
           const ts2 = pageDate(html) || (mdDate ? Date.parse(mdDate[1]) : c.ts);
-          if ((Date.now() - ts2) / 3600e3 > MAX_AGE_H) {
+          if ((Date.now() - ts2) / 3600e3 > maxAge) {
             log(`  - 跳过 ${c.source}｜渲染页日期 ${new Date(ts2).toISOString().slice(0, 10)}，超出 ${MAX_AGE_H} 小时`);
             continue;
           }
@@ -359,7 +361,7 @@ async function main() {
       }
       const realTs = pageDate(html);
       const real = realTs || c.ts;
-      if ((Date.now() - real) / 3600e3 > MAX_AGE_H) {
+      if ((Date.now() - real) / 3600e3 > maxAge) {
         log(`  - 跳过 ${c.source}｜正文日期 ${new Date(real).toISOString().slice(0, 10)}，超出 ${MAX_AGE_H} 小时`);
         continue;
       }
