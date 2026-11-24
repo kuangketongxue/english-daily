@@ -27,6 +27,8 @@ const AI_URL = AI_BASE.endsWith('/chat/completions') ? AI_BASE : `${AI_BASE}/cha
 const AI_MODEL = process.env.AI_MODEL || 'gpt-4o-mini';
 const GH_TOKEN = process.env.GITHUB_TOKEN || '';
 const TARGET_DATE = String(process.env.TARGET_DATE || '').trim();
+// 手动指定今天的稿子（热点原信这类「就是它」的场景），优先级高于一切选品
+const FORCE_URL = String(process.env.FORCE_URL || '').trim();
 const DRY = /^(1|true)$/i.test(String(process.env.DRY_RUN || ''));
 const UA = 'Mozilla/5.0 (compatible; english-daily/1.0)';
 const MIN_WORDS = 700;
@@ -331,14 +333,21 @@ async function main() {
   log(`候选 ${candidates.length} 篇（72 小时内、未写过）`);
   if (!candidates.length) throw new Error('没有可用候选：源站全部无新文或都已写过');
 
+  let forced = null;
+  if (FORCE_URL) {
+    log(`指定稿件：${FORCE_URL}`);
+    // 指定稿件不受 72 小时/字数门槛限制，但仍要抓到正文
+    candidates.unshift({ source: hostOf(FORCE_URL) || 'web', weight: 99, title: '', link: FORCE_URL, excerpt: '', ts: 0, viaSearch: true, forced: true });
+  }
+
   let chosen = null;
   for (const c of candidates) {
     try {
       const html = await get(c.link, 30000);
       const { text, paras, words } = extractBody(html);
       const official = /newsroom|nvidia|openai|anthropic|apple|microsoft|meta\.com|tesla/i.test(hostOf(c.link));
-      const minOk = official ? 250 : MIN_WORDS;
-      const maxAge = official ? 14 * 24 : MAX_AGE_H;   // 官方信件的价值在内容不在时效
+      const minOk = c.forced ? 80 : (official ? 250 : MIN_WORDS);
+      const maxAge = c.forced ? 365 * 24 : (official ? 14 * 24 : MAX_AGE_H);
       if (words < minOk) {
         const md = await firecrawlMarkdown(c.link);
         const p2 = md ? mdToParas(md) : [];
@@ -361,11 +370,16 @@ async function main() {
       }
       const realTs = pageDate(html);
       const real = realTs || (c.viaSearch ? 0 : c.ts);
-      if (real > 0 && (Date.now() - real) / 3600e3 > maxAge) {
+      if (!c.forced && real > 0 && (Date.now() - real) / 3600e3 > maxAge) {
         log(`  - 跳过 ${c.source}｜正文日期 ${new Date(real).toISOString().slice(0, 10)}，超出 ${MAX_AGE_H} 小时`);
         continue;
       }
-      chosen = { ...c, text, paras, words, ts: real, minutes: Math.max(3, Math.round(words / 230)) };
+      let title = c.title;
+      if (!title) {
+        const tm = html.match(/<title[^>]*>([^<]+)<\/title>/i) || html.match(/property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
+        title = tm ? tm[1].replace(/\s*[|｜-]\s*.*$/, '').trim() : c.link;
+      }
+      chosen = { ...c, title, text, paras, words, ts: real, minutes: Math.max(3, Math.round(words / 230)) };
       log(`  ✓ 选中 ${c.source}｜${words} 词｜约 ${chosen.minutes} 分钟：${c.title}`);
       break;
     } catch (e) {

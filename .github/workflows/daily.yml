@@ -19,6 +19,10 @@ on:
         description: 要补的日期 YYYY-MM-DD（留空＝今天；今天已有则补最近缺期）
         type: string
         default: ""
+      url:
+        description: 指定今天的文章地址（跳过选品，直接用它）
+        type: string
+        default: ""
       dry_run:
         description: 只跑选品与写稿，不写入、不提交
         type: boolean
@@ -61,6 +65,7 @@ jobs:
           AI_BASE_URL: ${{ secrets.AI_BASE_URL }}
           AI_MODEL: ${{ secrets.AI_MODEL }}
           TARGET_DATE: ${{ github.event.inputs.date || '' }}
+          FORCE_URL: ${{ github.event.inputs.url || '' }}
           DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
         run: node scripts/daily.mjs
 
