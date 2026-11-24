@@ -135,6 +135,36 @@ function hotScore(x) {
   return s;
 }
 
+
+// ── JS 站兜底：直接 fetch 抓不到正文（newsroom 多为前端渲染）时，交给 Firecrawl 渲染 ──
+// key 复用 parallel-search 的 firecrawl_keys（CI 里由 PS_CONFIG 写进仓库根的 config.json）。
+function psConfig() { try { return JSON.parse(readFileSync(join(ROOT, 'config.json'), 'utf8')); } catch { return {}; } }
+async function firecrawlMarkdown(url) {
+  const cfg = psConfig();
+  const keys = cfg.firecrawl_keys || (cfg.firecrawl_key ? [cfg.firecrawl_key] : []);
+  if (!keys.length) return '';
+  for (const k of keys) {
+    try {
+      const r = await fetch('https://api.firecrawl.dev/v2/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${k}` },
+        body: JSON.stringify({ url, formats: ['markdown'], onlyMainContent: true, waitFor: 2500 }),
+      });
+      if (!r.ok) continue;
+      const j = await r.json();
+      const md = j?.data?.markdown || '';
+      if (md) return md;
+    } catch {}
+  }
+  return '';
+}
+function mdToParas(md) {
+  return md.split(/\n{2,}/)
+    .map(x => x.replace(/\[(.*?)\]\(.*?\)/g, '$1').replace(/[#*_>`]/g, '').replace(/\s+/g, ' ').trim())
+    .filter(x => x.length > 60 && englishRatio(x) > 0.55)
+    .slice(0, 60);
+}
+
 function pageDate(html) {
   const pats = [
     /property=["']article:published_time["'][^>]+content=["']([^"']+)["']/i,
@@ -279,7 +309,21 @@ async function main() {
     try {
       const html = await get(c.link, 30000);
       const { text, paras, words } = extractBody(html);
-      if (words < MIN_WORDS) { log(`  - 跳过 ${c.source}｜${words} 词，不足 ${MIN_WORDS}`); continue; }
+      const minOk = /newsroom|nvidia|openai|anthropic|apple|microsoft|meta\.com|tesla/i.test(hostOf(c.link)) ? 250 : MIN_WORDS;
+      if (words < minOk) {
+        const md = await firecrawlMarkdown(c.link);
+        const p2 = md ? mdToParas(md) : [];
+        const w2 = (p2.join(' ').match(/\b[A-Za-z][A-Za-z'-]*\b/g) || []).length;
+        if (w2 >= minOk) {
+          log(`  ↑ ${c.source} 静态抓取只有 ${words} 词，Firecrawl 渲染后 ${w2} 词`);
+          const ts2 = pageDate(html);
+          chosen = { ...c, text: p2.join('\n'), paras: p2, words: w2, ts: ts2 || c.ts, minutes: Math.max(3, Math.round(w2 / 230)) };
+          log(`  ✓ 选中 ${c.source}｜${w2} 词｜约 ${chosen.minutes} 分钟：${c.title}`);
+          break;
+        }
+        log(`  - 跳过 ${c.source}｜${words} 词（渲染后 ${w2} 词），不足 ${minOk}`);
+        continue;
+      }
       const realTs = pageDate(html);
       chosen = { ...c, text, paras, words, ts: realTs || c.ts, minutes: Math.max(3, Math.round(words / 230)) };
       log(`  ✓ 选中 ${c.source}｜${words} 词｜约 ${chosen.minutes} 分钟：${c.title}`);
