@@ -316,7 +316,9 @@ async function main() {
         const w2 = (p2.join(' ').match(/\b[A-Za-z][A-Za-z'-]*\b/g) || []).length;
         if (w2 >= minOk) {
           log(`  ↑ ${c.source} 静态抓取只有 ${words} 词，Firecrawl 渲染后 ${w2} 词`);
-          const ts2 = pageDate(html);
+          // 渲染页常常没有 meta 时间，退回正文里那句 "November 8, 2026"
+          const mdDate = md.match(/([A-Z][a-z]{2,8}\s+\d{1,2},\s+20\d{2})/);
+          const ts2 = pageDate(html) || (mdDate ? Date.parse(mdDate[1]) : 0);
           chosen = { ...c, text: p2.join('\n'), paras: p2, words: w2, ts: ts2 || c.ts, minutes: Math.max(3, Math.round(w2 / 230)) };
           log(`  ✓ 选中 ${c.source}｜${w2} 词｜约 ${chosen.minutes} 分钟：${c.title}`);
           break;
