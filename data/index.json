@@ -3,21 +3,21 @@
   "issues": [
     {
       "date": "2026-11-24",
-      "title": "Microsoft AI Open Letter: Employees Question Rapid Rollout",
-      "title_zh": "微软AI公开信：员工质疑快速部署",
-      "source": "thefortunepost.com",
-      "link": "https://www.thefortunepost.com/amp/microsoft-ai-open-letter-employees-voluntary-buyouts-2026",
-      "minutes": 7,
-      "words": 1675,
-      "excerpt": "REDMOND, November 9, 2026 — A group of current and former Microsoft employees is circulating an open letter questioning the company’s rapid expansion of artificial intelligence across its products and workplace. The Microsoft AI open letter from employees raises concerns about worker input, customer interests and the technology giant’s climate commitments. It drew wider attention after Microsoft offered voluntary exit packages to eligible staff in India, the United States, Canada and the United Kingdom. About 60,000 employees are eligible for the programme, a potential pool rather than a confirmed departure count. Signed by a group identifying itself as “Concerned Microsoft Workers”, the letter argues that the company is moving too quickly to embed AI tools into everyday work and is not gi",
-      "published": "2026-11-09T06:53:38.000Z",
-      "digest": "微软部分现任与前任员工发布公开信，质疑公司过快将AI嵌入产品与职场，称员工对系统设计与部署缺乏话语权，并担忧工作负荷、组织重组、AI工具使用压力及数据中心扩张的环境影响。信中还涉及产品与客户体验、政府与国防合同等议题。与此同时，微软在印度、美国、加拿大和英国推出自愿离职计划，约6万名员工符合资格，但公司强调这与AI无关，且预计接受者不足5%。事件凸显AI战略在组织内部引发的张力，值得关注后续离职分布与政策调整。",
+      "title": "A Message to Our Company | NVIDIA Newsroom",
+      "title_zh": "致公司全体同仁的一封信",
+      "source": "nvidianews.nvidia.com",
+      "link": "https://nvidianews.nvidia.com/news/a-message-to-our-company",
+      "minutes": 3,
+      "words": 274,
+      "excerpt": "Exec Bios\n   NVIDIA Blog\n   Podcast\n   Media Assets\n   In the News\n   Press Contacts\n   Online Press Kits\n\nPress Release \n\nShare\n\nTweet Twitter\n\nShare LinkedIn\n\nShare Facebook\n\nEmail\n\n# A Message to Our Company\n\nNVIDIA founder and CEO Jensen Huang sent the following email to NVIDIA employees earlier today.\n\n November 8, 2026 \n\nImage 9: A Message to Our Company\n\nI owe my family and all of you an apology. [...] To my colleagues at NVIDIA, including those I have worked alongside for decades, and to our board, partners, and shareholders around the world: you deserve better from me. Leading NVIDIA is the privilege of my life. My responsibility is to serve you and be worthy of your trust. I have fallen short of that responsibility. I am fully committed to NVIDIA and will work to earn back your c",
+      "published": "2026-11-24T03:42:36.846Z",
+      "digest": "英伟达创始人兼CEO黄仁勋向全体员工发出公开信，坦承自己对妻子不忠，伤害了家人，并为此深表歉意。他承认自己辜负了家庭多年来的爱与支持，愿承担全部责任，同时希望家人能逐渐愈合创伤，重新赢得信任。对于同事、董事会及全球股东，他承认自己未能尽到领导者的责任，但承诺全力投入公司，努力赢回信心。针对媒体报道中的国家安全关切，英伟达董事会已启动独立调查，黄仁勋表示支持并全力配合，同时强调自己热爱国家与公司，并呼吁公众尊重家人的隐私。",
       "points": [
-        "公开信由“关心微软员工”群体签署，要求更实质的员工参与AI决策，并反对将AI使用作为绩效衡量手段。",
-        "自愿离职计划覆盖约6万名符合条件员工，但公司表示与AI无关，且预计接受比例很低，实际影响取决于接受者分布。",
-        "事件背景是微软AI基础设施投资巨大，但财务盈利与员工关切并不矛盾，关键在如何衡量AI的生产力、培训与责任归属。"
+        "黄仁勋公开承认对妻子不忠，向家人道歉并承担全部责任，希望家庭能愈合。",
+        "他承诺继续领导英伟达，努力赢回同事、董事会和股东的信任。",
+        "针对国家安全关切，董事会已启动独立调查，黄仁勋表示全力配合，并呼吁保护家人隐私。"
       ],
-      "difficulty": "母语者"
+      "difficulty": "雅思托福"
     }
   ]
 }
