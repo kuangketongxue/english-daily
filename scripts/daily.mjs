@@ -123,19 +123,9 @@ async function ask(prompt) {
     const j = await r.json();
     return j.choices?.[0]?.message?.content || '';
   }
-  // 无自备 key：用 GitHub Models（需 workflow 里 permissions: models: read）
-  const r = await fetch('https://models.github.ai/inference/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${GH_TOKEN}`,
-      Accept: 'application/vnd.github+json',
-    },
-    body: JSON.stringify({ model: 'openai/gpt-4o-mini', messages, temperature: 0.4 }),
-  });
-  if (!r.ok) throw new Error(`models ${r.status}`);
-  const j = await r.json();
-  return j.choices?.[0]?.message?.content || '';
+  // GitHub Models 已于 2026-07-30 全面下线，不能再用 github.token 兜底。
+  // 没有自备 key 时明确报错，让上层降级为「只发原文信息」，不要静默产出半成品。
+  throw new Error('未配置 AI_API_KEY / AI_BASE_URL（GitHub Models 已下线）');
 }
 
 function parseJSONLoose(s) {

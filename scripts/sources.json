@@ -1,19 +1,75 @@
 {
   "_note": "只收英文长文/评论类站点。weight 越高越优先；paywall 站点仍可抓取标题与摘要，正文可能不全时会自动跳过。",
   "sources": [
-    { "name": "Aeon", "rss": "https://aeon.co/feed.rss", "weight": 10 },
-    { "name": "Works in Progress", "rss": "https://worksinprogress.co/feed/", "weight": 10 },
-    { "name": "The Atlantic", "rss": "https://www.theatlantic.com/feed/all/", "weight": 9 },
-    { "name": "Noema", "rss": "https://www.noemamag.com/feed/", "weight": 9 },
-    { "name": "Asterisk", "rss": "https://asteriskmag.com/feed", "weight": 9 },
-    { "name": "Nautilus", "rss": "https://nautil.us/feed/", "weight": 8 },
-    { "name": "Quanta", "rss": "https://www.quantamagazine.org/feed/", "weight": 8 },
-    { "name": "The Marginalian", "rss": "https://www.themarginalian.org/feed/", "weight": 8 },
-    { "name": "Longreads", "rss": "https://longreads.com/feed/", "weight": 7 },
-    { "name": "Persuasion", "rss": "https://www.persuasion.community/feed", "weight": 7 },
-    { "name": "Stratechery", "rss": "https://stratechery.com/feed/", "weight": 7 },
-    { "name": "Every", "rss": "https://every.to/feed", "weight": 6 },
-    { "name": "MIT Technology Review", "rss": "https://www.technologyreview.com/feed/", "weight": 6 },
-    { "name": "The New Yorker", "rss": "https://www.newyorker.com/feed/everything", "weight": 6 }
+    {
+      "name": "Aeon",
+      "rss": "https://aeon.co/feed.rss",
+      "weight": 10
+    },
+    {
+      "name": "Works in Progress",
+      "rss": "https://www.worksinprogress.news/feed",
+      "weight": 10
+    },
+    {
+      "name": "The Atlantic",
+      "rss": "https://www.theatlantic.com/feed/all/",
+      "weight": 9
+    },
+    {
+      "name": "Noema",
+      "rss": "https://www.noemamag.com/feed/",
+      "weight": 9
+    },
+    {
+      "name": "Asterisk",
+      "rss": "https://asteriskmag.com/feed",
+      "weight": 9
+    },
+    {
+      "name": "Nautilus",
+      "rss": "https://nautil.us/feed/",
+      "weight": 8
+    },
+    {
+      "name": "Quanta",
+      "rss": "https://www.quantamagazine.org/feed/",
+      "weight": 8
+    },
+    {
+      "name": "The Marginalian",
+      "rss": "https://www.themarginalian.org/feed/",
+      "weight": 8
+    },
+    {
+      "name": "Longreads",
+      "rss": "https://longreads.com/feed/",
+      "weight": 7
+    },
+    {
+      "name": "Persuasion",
+      "rss": "https://www.persuasion.community/feed",
+      "weight": 7
+    },
+    {
+      "name": "Stratechery",
+      "rss": "https://stratechery.com/feed/",
+      "weight": 7
+    },
+    {
+      "name": "Every",
+      "rss": "https://every.to/feed",
+      "weight": 6
+    },
+    {
+      "name": "MIT Technology Review",
+      "rss": "https://www.technologyreview.com/feed/",
+      "weight": 6
+    },
+    {
+      "name": "The New Yorker",
+      "rss": "https://www.newyorker.com/feed/everything",
+      "weight": 6
+    }
   ]
 }
