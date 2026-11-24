@@ -12,6 +12,8 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFile } from 'node:child_process';
+import { tmpdir } from 'node:os';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DATA = join(ROOT, 'data');
@@ -122,6 +124,19 @@ function hotScore(x) {
   return s;
 }
 
+function pageDate(html) {
+  const pats = [
+    /property=["']article:published_time["'][^>]+content=["']([^"']+)["']/i,
+    /content=["']([^"']+)["'][^>]+property=["']article:published_time["']/i,
+    /name=["'](?:pubdate|publishdate|date|dc.date)["'][^>]+content=["']([^"']+)["']/i,
+  ];
+  for (const p of pats) {
+    const m = html.match(p);
+    if (m) { const t = Date.parse(m[1]); if (Number.isFinite(t)) return t; }
+  }
+  return 0;
+}
+
 function extractBody(html) {
   const art = html.match(/<article[\s\S]*?<\/article>/i);
   let block = art ? art[0] : html.replace(/<(nav|header|footer|aside)[\s\S]*?<\/\1>/gi, ' ');
@@ -174,6 +189,49 @@ function rebuildIndex() {
   return issues.length;
 }
 
+
+// ── 全网搜索（parallel-search skill 内置，Exa/Tavily/Firecrawl/元宝 多源并行）──
+// 媒体 RSS 拿不到「公司自己发的信」，这类东西只在 newsroom 和全网索引里。
+// 所以每天先用几条热点 query 去搜，搜到的页面与 RSS 候选一起排序，热点稿天然靠前。
+const HOT_QUERIES = [
+  'CEO resignation letter to employees this week',
+  'open letter to employees AI company 2026',
+  'founder public apology letter full text',
+];
+const PY = process.platform === 'win32' ? 'python' : 'python3';
+function psSearch(query) {
+  return new Promise((resolve) => {
+    const out = join(tmpdir(), `ps-${Date.now()}-${Math.random().toString(36).slice(2)}.json`);
+    execFile(PY, [join(ROOT, 'scripts', 'ps_search.py'), '--query', query, '--top-k', '8', '--out', out],
+      { timeout: 150000, maxBuffer: 8 * 1024 * 1024 }, (err) => {
+        if (err) { log(`  搜索失败（${query.slice(0, 24)}…）：${err.message.split('\n')[0]}`); return resolve([]); }
+        try {
+          const j = JSON.parse(readFileSync(out, 'utf8'));
+          resolve((j.results || []).map(r => ({
+            source: r.source || 'web', weight: 12,
+            title: r.title || '', link: r.url || r.link || '',
+            excerpt: r.description || r.snippet || r.text || '', ts: Date.now(), viaSearch: true,
+          })).filter(x => x.link && x.title));
+        } catch (e) { resolve([]); }
+      });
+  });
+}
+
+async function gatherWeb() {
+  const lists = await Promise.all(HOT_QUERIES.map(psSearch));
+  const seen = new Set();
+  const out = [];
+  for (const list of lists) for (const x of list) {
+    if (seen.has(x.link)) continue;
+    seen.add(x.link);
+    // 搜索结果的标题多是中文站转载，只留英文标题的页面
+    if (englishRatio(x.title) < 0.5) continue;
+    out.push(x);
+  }
+  log(`  全网搜索补充 ${out.length} 条（英文标题）`);
+  return out;
+}
+
 function pickTarget() {
   const t = today();
   if (TARGET_DATE) return TARGET_DATE;
@@ -193,7 +251,8 @@ async function main() {
 
   const history = new Set(existsSync(HIST) ? JSON.parse(readFileSync(HIST, 'utf8')) : []);
   const now = Date.now();
-  const candidates = (await gather())
+  const [feedItems, webItems] = await Promise.all([gather(), gatherWeb()]);
+  const candidates = [...webItems, ...feedItems]
     .filter(x => !history.has(x.link))
     .filter(x => englishRatio(x.title) > 0.6)
     .filter(x => now - x.ts <= MAX_AGE_H * 3600e3)
@@ -209,7 +268,8 @@ async function main() {
       const html = await get(c.link, 30000);
       const { text, paras, words } = extractBody(html);
       if (words < MIN_WORDS) { log(`  - 跳过 ${c.source}｜${words} 词，不足 ${MIN_WORDS}`); continue; }
-      chosen = { ...c, text, paras, words, minutes: Math.max(3, Math.round(words / 230)) };
+      const realTs = pageDate(html);
+      chosen = { ...c, text, paras, words, ts: realTs || c.ts, minutes: Math.max(3, Math.round(words / 230)) };
       log(`  ✓ 选中 ${c.source}｜${words} 词｜约 ${chosen.minutes} 分钟：${c.title}`);
       break;
     } catch (e) {

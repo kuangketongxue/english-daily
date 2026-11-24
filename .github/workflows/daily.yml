@@ -42,6 +42,16 @@ jobs:
         with:
           node-version: 24
 
+      - name: 写入搜索源配置（Exa / Tavily / Firecrawl / 元宝）
+        env:
+          PS_CONFIG: ${{ secrets.PS_CONFIG }}
+        run: |
+          if [ -z "$PS_CONFIG" ]; then
+            echo "没有 PS_CONFIG：本次只走 RSS，全网搜索跳过"
+            exit 0
+          fi
+          printf '%s' "$PS_CONFIG" > config.json
+
       - name: 选品 + 写中文导读
         env:
           GITHUB_TOKEN: ${{ github.token }}
