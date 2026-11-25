@@ -1,3 +1,13 @@
 config.json
 state/
 .tmp/
+# 本地验证/备份/扫描临时产物（不提交）
+_scan_*/
+_verify_*/
+.bak-*/
+data.bak-*/
+_apply_fixes*.py
+_clean_posts.py
+_fill_meta.py
+_scan_report.md
+_verify_server.log
