@@ -119,6 +119,11 @@
   function observeParas() {
     if (io) io.disconnect();
     const targets = ['brief', 'text', 'study'].map(function (id) { return document.getElementById(id); }).filter(Boolean);
+    // TOC 子项（大纲锚点）也纳入观察，否则 01~07 永远不高亮
+    $$('#toc a[data-target]').forEach(function (a) {
+      const t = document.getElementById(a.dataset.target);
+      if (t && targets.indexOf(t) === -1) targets.push(t);
+    });
     if (!('IntersectionObserver' in window)) return;
     io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
@@ -185,7 +190,13 @@
         a.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ul></div>');
     }
 
-    if (!tabs.length) return '';
+    if (!tabs.length) {
+      // 无 AI 精读时给明确提示，而不是留一个空区块让读者以为加载失败
+      return '<section class="study" id="study">' +
+        '<div class="study__head"><h2>AI 精读<span>Study notes</span></h2></div>' +
+        '<p class="study__empty">本期暂无 AI 精读（难句 / 词汇 / 句式 / 思辨）。中文导读与英文原文可正常阅读；精读由模型逐期生成，稍后补齐。</p>' +
+        '</section>';
+    }
 
     return [
       '<section class="study" id="study">',
@@ -384,6 +395,7 @@
     const d = date || (issues[0] && issues[0].date);
     if (!d) {
       $('#doc').innerHTML = '<div class="doc__head"><p class="kicker">还没有内容</p><h1>第一期还在路上</h1></div>';
+      document.body.classList.add('no-post');
       return;
     }
 
@@ -393,7 +405,8 @@
       const fallback = issues.find(function (x) { return x.date === d; });
       if (!fallback) {
         $('#doc').innerHTML = '<div class="doc__head"><p class="kicker">读不到这一期</p><h1>页面不存在</h1>' +
-          '<p class="doc__zh">' + esc(e.message) + '　<a href="./">回首页</a></p></div>';
+          '<p class="doc__zh">' + esc(e.message) + '　<a class="btn btn--ghost" href="./">回首页</a></p></div>';
+        document.body.classList.add('no-post');
         return;
       }
       post = fallback;
@@ -462,4 +475,21 @@
   }
 
   main();
+})();
+
+/* 返回顶部（超长文章阅读辅助） */
+(function () {
+  function ensureBackTop() {
+    if (document.getElementById('backTop')) return;
+    var b = document.createElement('button');
+    b.id = 'backTop'; b.className = 'back-top'; b.textContent = '↑';
+    b.setAttribute('aria-label', '返回顶部');
+    b.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    document.body.appendChild(b);
+    function sync() { b.classList.toggle('show', window.scrollY > 600); }
+    window.addEventListener('scroll', sync, { passive: true });
+    sync();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureBackTop);
+  else ensureBackTop();
 })();
