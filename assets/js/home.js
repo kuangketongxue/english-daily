@@ -144,7 +144,7 @@
       history.replaceState(null, '', '#' + k);
     }
     $('#continue').hidden = true;
-    if (k === 'articles' || k === 'favs') renderContinue();
+    if (k === 'articles' || k === 'favs' && pool('favs').length > 0) renderContinue();
     renderFeed();
     closeSide();
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
@@ -200,11 +200,21 @@
 
     const collapsed = CR.get('cr.side.collapsed', false);
     if (collapsed) document.body.dataset.collapsed = '1';
+    function syncCollapseBtn() {
+      const collapsed = document.body.dataset.collapsed === '1';
+      const btn = $('#collapseBtn');
+      if (!btn) return;
+      btn.setAttribute('aria-label', collapsed ? '展开侧栏' : '收起侧栏');
+      btn.setAttribute('title', collapsed ? '展开侧栏' : '收起侧栏');
+      btn.style.transform = collapsed ? 'rotate(180deg)' : '';
+    }
+    syncCollapseBtn();
     $('#collapseBtn').addEventListener('click', function () {
       const on = document.body.dataset.collapsed !== '1';
       if (on) document.body.dataset.collapsed = '1';
       else delete document.body.dataset.collapsed;
       CR.set('cr.side.collapsed', on);
+      syncCollapseBtn();
     });
   }
 
