@@ -58,8 +58,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  opacity: 0;
-  transform: translateY(4px);
+  opacity: 1;
+  transform: none;
   transition: opacity 0.24s ease, transform 0.24s ease;
   padding-left: 6px;
   border-left: 1px solid var(--rule-soft);
@@ -71,6 +71,7 @@
 .tool {
   width: 34px; height: 34px;
   display: grid; place-items: center;
+  position: relative;
   color: var(--muted);
   border-radius: 2px;
   transition: color 0.16s ease, background-color 0.16s ease;
@@ -162,6 +163,7 @@
 .pref__seg { display: flex; border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; }
 .pref__seg button {
   width: 30px; height: 26px;
+  position: relative;
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--muted);
@@ -448,7 +450,7 @@
   margin-left: 7px;
   text-transform: lowercase;
 }
-.vocab__zh { margin: 3px 0 0; font-size: 13px; color: var(--muted); line-height: 1.65; }
+.vocab__zh { margin: 3px 0 0; font-size: 14px; color: var(--body); line-height: 1.65; }
 .vocab__ex {
   margin: 6px 0 0;
   font-family: var(--font-latin);
@@ -477,7 +479,7 @@
   line-height: 1.65;
   color: var(--ink);
 }
-.pattern__zh { margin: 5px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+.pattern__zh { margin: 5px 0 0; font-size: 14px; color: var(--body); line-height: 1.7; }
 .pattern__ex {
   margin: 8px 0 0;
   font-family: var(--font-latin);
@@ -586,3 +588,33 @@
   .tabs { width: 100%; }
   .tabs button { flex: 1; padding: 6px 4px; font-size: 12px; }
 }
+
+/* 触摸热区：视觉尺寸不变，透明扩展到 44px（阅读体验修复） */
+@media (pointer: coarse) {
+  .tool::after, .pref__seg button::after, .stars button::after { content: ''; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; transform: translate(-50%, -50%); }
+}
+
+/* 无 AI 精读时的明确提示（阅读体验修复） */
+.study__empty {
+  margin: 14px 0 0; padding: 14px 16px;
+  border-left: 2px solid var(--accent);
+  background: var(--accent-wash);
+  font-size: 14px; line-height: 1.75; color: var(--body);
+}
+
+/* 窄屏隐藏段落编号，避免被裁切 */
+@media (max-width: 720px) {
+  .text > p::before { display: none; }
+}
+/* 错误态隐藏无关阅读设置 */
+.no-post .rail, .no-post .rbar__tools { display: none !important; }
+
+/* 返回顶部按钮 */
+.back-top {
+  position: fixed; right: 20px; bottom: 24px; z-index: 60;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--accent); color: var(--accent-ink);
+  font-size: 20px; box-shadow: var(--shadow-md);
+  opacity: 0; visibility: hidden; transition: opacity 0.2s, visibility 0.2s;
+}
+.back-top.show { opacity: 1; visibility: visible; }
