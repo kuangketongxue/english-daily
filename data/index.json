@@ -1,7 +1,7 @@
 {
   "updated": "2026-11-25",
   "counts": {
-    "articles": 2,
+    "articles": 3,
     "books": 0,
     "series": 0,
     "films": 0
@@ -55,6 +55,35 @@
       "snippet": "I was unfaithful to my wife. My actions hurt her and our children. There is no excuse for what I did. I am deeply sorry.",
       "has_analysis": true,
       "has_translation": true
+    },
+    {
+      "date": "2026-11-23",
+      "title": "The Individual Exception",
+      "title_zh": "个人例外",
+      "author": "",
+      "source": "Stratechery",
+      "link": "https://stratechery.com/2026/the-individual-exception/",
+      "words": 2682,
+      "minutes": 12,
+      "published": "2026-11-24T11:00:00.000Z",
+      "genre": "深度报道",
+      "cefr": "C1（长句多、抽象名词多、专业术语多）",
+      "themes": [
+        "AI赋能个人",
+        "组织变革",
+        "黄仁勋与Nvidia",
+        "科技商业"
+      ],
+      "tldr": "AI放大个人能力，公司组织正从层级制转向个人主导。",
+      "digest": "作者以自身用AI完成团队工作的经历开篇，对比AT&T与Nvidia等公司的员工数与市值数据，揭示AI时代公司员工数量“通缩”现象。随后聚焦黄仁勋被罢免又复职事件，论证关键个人对AI公司的不可替代性。作者认为，AI让个人能力空前放大，未来更多公司将像Nvidia一样由极少数人甚至个人主导，而非传统层级制。文章立场乐观，认为这是技术进步的必然，但也承认带来不平等问题。值得读，因为它提供了理解AI对商业组织影响的独特视角。",
+      "points": [
+        "Nvidia市值/员工比达9500万美元，远超AT&T等传统公司，显示AI公司员工“通缩”现象。",
+        "黄仁勋被罢免后复职，显示关键个人对AI公司的不可替代性，个人例外成趋势。",
+        "未来更多公司将像Nvidia一样，由极少数人甚至个人主导，而非层级制。"
+      ],
+      "snippet": "All of this would have taken teams of people weeks of work, if not months, just a few years ago; I, however, have AI. It only takes an individual.",
+      "has_analysis": true,
+      "has_translation": false
     }
   ],
   "books": [],
