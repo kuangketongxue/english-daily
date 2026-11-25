@@ -18,8 +18,8 @@
   --ink: #17150f;
   --ink-soft: #2c2921;
   --body: #35322a;
-  --muted: #79725f;
-  --faint: #9e9684;
+  --muted: #6e6858;
+  --faint: #6f6858;
   --rule: rgba(23, 21, 15, 0.15);
   --rule-soft: rgba(23, 21, 15, 0.075);
   --accent: #a8502c;
@@ -55,8 +55,8 @@ html[data-theme="night"] {
   --ink: #f0efea;
   --ink-soft: #dbd9d2;
   --body: #c2c0b8;
-  --muted: #94918a;
-  --faint: #6e6b64;
+  --muted: #a8a49c;
+  --faint: #9a968d;
   --rule: rgba(240, 239, 234, 0.18);
   --rule-soft: rgba(240, 239, 234, 0.085);
   --accent: #d97757;
@@ -185,6 +185,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   gap: 3px;
 }
 .stars button {
+  position: relative;
   padding: 1px;
   line-height: 1;
   color: var(--faint);
