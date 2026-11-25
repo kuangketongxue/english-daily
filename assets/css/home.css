@@ -121,7 +121,7 @@
 .app-body[data-collapsed="1"] .navitem__n,
 .app-body[data-collapsed="1"] .navitem__chev { display: none; }
 .app-body[data-collapsed="1"] .side__top { justify-content: center; padding-inline: 0; }
-.app-body[data-collapsed="1"] .side__collapse { display: none; }
+.app-body[data-collapsed="1"] .side__collapse { display: grid; place-items: center; width: 34px; height: 34px; margin: 0 auto; opacity: 1; }
 .app-body[data-collapsed="1"] .navitem { justify-content: center; padding: 0; height: 40px; }
 .app-body[data-collapsed="1"] .side__label { display: none; }
 
