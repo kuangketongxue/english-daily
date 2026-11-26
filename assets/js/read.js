@@ -11,6 +11,7 @@
   const date = new URLSearchParams(location.search).get('d');
   let issues = [];
   let post = null;
+  let lockProgressUntil = 0;
 
   /* ── 版式偏好 ───────────────────────────────────────── */
   const LEAD = [1.72, 1.92, 2.12];
@@ -320,7 +321,7 @@
     let t = 0;
     function save(p) {
       const now = Date.now();
-      if (now - t < 500) return;
+      if (now < lockProgressUntil || now - t < 500) return;
       t = now;
       if (p > 0.02) CR.setProgress(post.date, p);
     }
@@ -349,6 +350,43 @@
           : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg>';
       });
     }
+  }
+
+  /* ── 手动设置阅读进度 ───────────────────────────────── */
+  function wireManualProgress() {
+    const wrap = $('#manualProgress');
+    const input = $('#progressVal');
+    if (!wrap || !input || !post) return;
+    input.value = String(Math.round(CR.progressOf(post.date) * 100));
+
+    function apply(p, jump) {
+      p = Math.max(0, Math.min(1, Number(p) || 0));
+      CR.setProgress(post.date, p);
+      lockProgressUntil = Date.now() + 1500;
+      input.value = String(Math.round(p * 100));
+      const bar = $('#bar');
+      if (bar) bar.style.width = (p * 100).toFixed(1) + '%';
+      if (jump && p < 1) {
+        const el = document.getElementById('text');
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.scrollY + el.offsetHeight * p - window.innerHeight * 0.35;
+          window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        }
+      }
+      CR.toast('阅读进度已设为 ' + Math.round(p * 100) + '%', 1400);
+    }
+
+    wrap.addEventListener('click', function (e) {
+      const b = e.target.closest('button[data-progress]');
+      if (!b) return;
+      const act = b.getAttribute('data-progress');
+      if (act === 'done') apply(1, false);
+      else if (act === 'set') apply((Number(input.value) || 0) / 100, true);
+      else apply(CR.progressOf(post.date) + Number(act) / 100, true);
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); apply((Number(input.value) || 0) / 100, true); }
+    });
   }
 
   /* ── 侧栏（移动端） ─────────────────────────────────── */
@@ -429,6 +467,7 @@
     wireStudy();
     buildTOC();
     wireProgress();
+    wireManualProgress();
 
     $('#railNo').textContent = 'No.' + no;
     $('#railDate').textContent = F.dstr(post.date);
