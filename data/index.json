@@ -1,31 +1,46 @@
 {
-  "updated": "2026-11-25",
+  "updated": "2026-11-26",
   "counts": {
-    "articles": 3,
+    "articles": 4,
     "books": 0,
     "series": 0,
     "films": 0
   },
   "issues": [
     {
+      "date": "2026-11-26",
+      "title": "The Price of an Iranian Life",
+      "title_zh": "",
+      "author": "",
+      "source": "The New Yorker",
+      "link": "https://www.newyorker.com/news/the-lede/the-price-of-an-iranian-life",
+      "words": 1787,
+      "minutes": 8,
+      "published": "2026-11-26T11:00:00.000Z",
+      "genre": "",
+      "cefr": "",
+      "themes": [],
+      "tldr": "",
+      "digest": "",
+      "points": [],
+      "snippet": "As Jabarzadegan pleaded for amnesty, Hossein’s mother, Mokarameh Adibi, sat wrapped in a chador, her face hardened by grief. “I hope she bleeds to death through her nose,” she said, of Tahereh.",
+      "has_analysis": false,
+      "has_translation": false
+    },
+    {
       "date": "2026-11-25",
       "title": "Long Live the Chip King",
       "title_zh": "芯片之王万岁",
-      "author": "The New Yorker 编辑部",
+      "author": "",
       "source": "The New Yorker",
       "link": "https://www.newyorker.com/news/the-lede/long-live-the-chip-king",
       "words": 1656,
       "minutes": 7,
       "published": "2026-11-24T16:45:06.623Z",
-      "genre": "时事评论 / 商业人物",
-      "cefr": "C1（长句多、讽刺笔法、文化背景密集）",
-      "themes": [
-        "英伟达",
-        "黄仁勋",
-        "美国科技政策",
-        "AI 泡沫"
-      ],
-      "tldr": "一篇围绕黄仁勋复职的时事评论：从一张 AI 合成的讽刺图片讲起，讨论政商关系与市场反应。",
+      "genre": "",
+      "cefr": "",
+      "themes": [],
+      "tldr": "",
       "digest": "《纽约客》一篇围绕英伟达 CEO 黄仁勋的时事评论。文章从特朗普社交账号上一张 AI 合成的「黄仁勋取代特朗普、举起红色内衣」图片切入，梳理了黄仁勋因私人风波短暂离任、英伟达董事会在其复职后股价大涨、以及市场对 AI 泡沫的担忧。文章还讨论了美国政府对华科技政策与个人商业利益之间的关系。全文以讽刺笔法写成，长句多、文化典故密集，适合 C1 水平读者做「英语时事评论」精读。",
       "points": [
         "开篇是一张 AI 合成图片的描写（把政治人物替换成黄仁勋），是理解全文讽刺基调的钥匙。",
@@ -34,8 +49,7 @@
       ],
       "snippet": "President Donald Trump’s Truth Social account is many things: a disturbing stream of consciousness...",
       "has_analysis": false,
-      "has_translation": false,
-      "no_analysis": true
+      "has_translation": false
     },
     {
       "date": "2026-11-24",
@@ -91,7 +105,7 @@
         "黄仁勋被罢免后复职，显示关键个人对AI公司的不可替代性，个人例外成趋势。",
         "未来更多公司将像Nvidia一样，由极少数人甚至个人主导，而非层级制。"
       ],
-      "snippet": "All of this would have taken teams of people weeks of work, if not months, just a few years ago...",
+      "snippet": "All of this would have taken teams of people weeks of work, if not months, just a few years ago; I, however, have AI. It only takes an individual.",
       "has_analysis": true,
       "has_translation": false
     }
