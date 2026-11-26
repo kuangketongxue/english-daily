@@ -70,6 +70,15 @@
         <span class="pref__seg" id="transSeg"><button data-trans="0">关</button><button data-trans="1">开</button></span>
       </div>
       <div class="pref">
+        <span>阅读进度</span>
+        <span class="pref__seg" id="manualProgress">
+          <button data-progress="-10" aria-label="进度回退 10%">−10</button>
+          <input id="progressVal" type="number" min="0" max="100" step="1" inputmode="numeric" aria-label="阅读进度百分比">
+          <button data-progress="set">设为</button>
+          <button data-progress="done">已读</button>
+        </span>
+      </div>
+      <div class="pref">
         <span>主题</span>
         <span class="pref__seg" id="themeSeg"><button data-theme-set="paper">纸</button><button data-theme-set="night">夜</button></span>
       </div>
