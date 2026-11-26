@@ -458,14 +458,22 @@ async function main() {
   globalThis.__bias = sourceBias();
   if (Object.keys(globalThis.__bias).length) log('  个性化权重：' + Object.entries(globalThis.__bias).map(([k, v]) => `${k}×${v.toFixed(2)}`).join(' / '));
   const [feedItems, webItems] = await Promise.all([gather(), gatherWeb()]);
+  // 同一站点最多占 3 个名额：否则 The Atlantic 一批 403 就能把整个候选池占满，
+  // 明明 Aeon / Stratechery 等源有可抓的长文，脚本却报「候选全部抓不到」（2026-11-26 实撞）。
+  const perHost = Object.create(null);
   const candidates = [...webItems, ...feedItems]
     .filter(x => !history.has(x.link))
     .filter(x => englishRatio(x.title) > 0.6)
     .filter(x => now - x.ts <= MAX_AGE_H * 3600e3)
     .map(x => ({ ...x, heat: hotScore(x) }))
+    .filter(x => {
+      const h = hostOf(x.link) || 'web';
+      perHost[h] = (perHost[h] || 0) + 1;
+      return perHost[h] <= 3;
+    })
     .sort((a, b) => (b.heat - a.heat) || (b.weight - a.weight) || (b.ts - a.ts))
-    .slice(0, 14);
-  log(`候选 ${candidates.length} 篇（72 小时内、未写过）`);
+    .slice(0, 30);
+  log(`候选 ${candidates.length} 篇（72 小时内、未写过、单站最多 3 篇）`);
   if (!candidates.length) throw new Error('没有可用候选：源站全部无新文或都已写过');
 
   let forced = null;
@@ -475,64 +483,85 @@ async function main() {
     candidates.unshift({ source: hostOf(FORCE_URL) || 'web', weight: 99, title: '', link: FORCE_URL, excerpt: '', ts: 0, viaSearch: true, forced: true });
   }
 
-  let chosen = null;
-  for (const c of candidates) {
-    try {
-      const html = await get(c.link, 30000);
-      const { text, paras, words } = extractBody(html);
-      const official = /newsroom|nvidia|openai|anthropic|apple|microsoft|meta\.com|tesla/i.test(hostOf(c.link));
-      // 官方 newsroom 的公开信天然短，给 350 词下限；其余一律 700 词起，才对得起「长文」两个字
-      const minOk = c.forced ? 80 : (official ? 350 : MIN_WORDS);
-      const maxAge = c.forced ? 365 * 24 : (official ? 14 * 24 : MAX_AGE_H);
-      if (words < minOk) {
-        const md = await firecrawlMarkdown(c.link);
-        const p2 = md ? mdToParas(md) : [];
-        const w2 = (p2.join(' ').match(/\b[A-Za-z][A-Za-z'-]*\b/g) || []).length;
-        if (w2 >= minOk) {
-          log(`  ↑ ${c.source} 静态抓取只有 ${words} 词，Firecrawl 渲染后 ${w2} 词`);
-          // 渲染页常常没有 meta 时间，退回正文里那句 "November 8, 2026"
-          const mdDate = md.match(/([A-Z][a-z]{2,8}\s+\d{1,2},\s+20\d{2})/);
-          const ts2 = pageDate(html) || (mdDate ? Date.parse(mdDate[1]) : (c.viaSearch ? 0 : c.ts));
-          if (ts2 > 0 && (Date.now() - ts2) / 3600e3 > maxAge) {
-            log(`  - 跳过 ${c.source}｜渲染页日期 ${new Date(ts2).toISOString().slice(0, 10)}，超出 ${MAX_AGE_H} 小时`);
-            continue;
+  // 选品分两轮：常规门槛先上；全部失败就放宽到 7 天 / 450 词。
+  // 2026-11-26 连续 8 批定时任务全挂在「候选全部抓不到」，根因是单一站点 403 占满候选池 + 无降级。
+  const pickFrom = async function (list, minWords, maxAgeH) {
+    for (const c of list) {
+      try {
+        let html = '', text = '', paras = [], words = 0, rendered = false;
+        try {
+          html = await get(c.link, 30000);
+          ({ text, paras, words } = extractBody(html));
+        } catch (e) {
+          // 403 / 429 / 5xx 不等于这篇没长文，先用渲染版兜一次
+          if (!/403|429|50\d/.test(String(e.message || ''))) throw e;
+          log(`  ↻ ${c.source} 直抓 ${e.message}，改用渲染版`);
+          rendered = true;
+        }
+        const official = /newsroom|nvidia|openai|anthropic|apple|microsoft|meta\.com|tesla/i.test(hostOf(c.link));
+        const minOk = c.forced ? 80 : (official ? Math.min(350, minWords) : minWords);
+        const maxAge = c.forced ? 365 * 24 : (official ? Math.min(14 * 24, maxAgeH) : maxAgeH);
+        if (rendered || words < minOk) {
+          const md = await firecrawlMarkdown(c.link);
+          const p2 = md ? mdToParas(md) : [];
+          const w2 = (p2.join(' ').match(/\b[A-Za-z][A-Za-z'-]*\b/g) || []).length;
+          if (w2 >= minOk) {
+            log(`  ↑ ${c.source} ${rendered ? '直抓被拦' : '静态抓取只有 ' + words + ' 词'}，渲染后 ${w2} 词`);
+            // 渲染页常常没有 meta 时间，退回正文里那句 "November 8, 2026"
+            const mdDate = md.match(/([A-Z][a-z]{2,8}\s+\d{1,2},\s+20\d{2})/);
+            const ts2 = pageDate(html) || (mdDate ? Date.parse(mdDate[1]) : (c.viaSearch ? 0 : c.ts));
+            if (!c.forced && ts2 > 0 && (Date.now() - ts2) / 3600e3 > maxAge) {
+              log(`  - 跳过 ${c.source}｜渲染页日期 ${new Date(ts2).toISOString().slice(0, 10)}，超出 ${maxAgeH} 小时`);
+              continue;
+            }
+            let title = c.title;
+            if (!title) {
+              const h1 = (md.match(/^#\s+(.+)$/m) || [])[1];
+              title = h1 ? h1.trim() : c.link;
+            }
+            const got = { ...c, title, text: p2.join('\n'), paras: p2, words: w2, ts: ts2 || c.ts, minutes: Math.max(3, Math.round(w2 / 230)) };
+            log(`  ✓ 选中 ${c.source}｜${w2} 词｜约 ${got.minutes} 分钟：${got.title}`);
+            return got;
           }
-          chosen = { ...c, text: p2.join('\n'), paras: p2, words: w2, ts: ts2 || c.ts, minutes: Math.max(3, Math.round(w2 / 230)) };
-          log(`  ✓ 选中 ${c.source}｜${w2} 词｜约 ${chosen.minutes} 分钟：${c.title}`);
-          break;
+          if (!rendered) log(`  - 跳过 ${c.source}｜${words} 词（渲染后 ${w2} 词），不足 ${minOk}`);
+          continue;
         }
-        log(`  - 跳过 ${c.source}｜${words} 词（渲染后 ${w2} 词），不足 ${minOk}`);
-        continue;
-      }
-      const realTs = pageDate(html);
-      const real = realTs || (c.viaSearch ? 0 : c.ts);
-      if (!c.forced && real > 0 && (Date.now() - real) / 3600e3 > maxAge) {
-        log(`  - 跳过 ${c.source}｜正文日期 ${new Date(real).toISOString().slice(0, 10)}，超出 ${MAX_AGE_H} 小时`);
-        continue;
-      }
-      let title = c.title;
-      if (!title) {
-        // og:title 优先；<title> 常带「 | 站点名」后缀，只在去掉后缀仍够长时才用，否则保留原样
-        const og = html.match(/property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
-        const tg = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-        let raw = (og ? og[1] : (tg ? tg[1] : '')).trim();
-        const cut = raw.replace(/\s*[|｜]\s*.*$/, '').trim();
-        title = cut.length >= 8 ? cut : raw;
+        const realTs = pageDate(html);
+        const real = realTs || (c.viaSearch ? 0 : c.ts);
+        if (!c.forced && real > 0 && (Date.now() - real) / 3600e3 > maxAge) {
+          log(`  - 跳过 ${c.source}｜正文日期 ${new Date(real).toISOString().slice(0, 10)}，超出 ${maxAgeH} 小时`);
+          continue;
+        }
+        let title = c.title;
         if (!title) {
-          // 兜底：渲染页的 H1（Firecrawl 的 markdown 第一行）
-          const md3 = await firecrawlMarkdown(c.link);
-          const h1 = (md3.match(/^#\s+(.+)$/m) || [])[1];
-          title = h1 ? h1.trim() : c.link;
+          // og:title 优先；<title> 常带「 | 站点名」后缀，只在去掉后缀仍够长时才用
+          const og = html.match(/property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
+          const tg = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+          let raw = (og ? og[1] : (tg ? tg[1] : '')).trim();
+          const cut = raw.replace(/\s*[|｜]\s*.*$/, '').trim();
+          title = cut.length >= 8 ? cut : raw;
+          if (!title) {
+            const md3 = await firecrawlMarkdown(c.link);
+            const h1 = (md3.match(/^#\s+(.+)$/m) || [])[1];
+            title = h1 ? h1.trim() : c.link;
+          }
         }
+        const got = { ...c, title, text, paras, words, ts: real, minutes: Math.max(3, Math.round(words / 230)) };
+        log(`  ✓ 选中 ${c.source}｜${words} 词｜约 ${got.minutes} 分钟：${got.title}`);
+        return got;
+      } catch (e) {
+        log(`  - ${c.source} 抓取失败：${e.message}`);
       }
-      chosen = { ...c, title, text, paras, words, ts: real, minutes: Math.max(3, Math.round(words / 230)) };
-      log(`  ✓ 选中 ${c.source}｜${words} 词｜约 ${chosen.minutes} 分钟：${c.title}`);
-      break;
-    } catch (e) {
-      log(`  - ${c.source} 抓取失败：${e.message}`);
     }
+    return null;
+  };
+
+  let chosen = await pickFrom(candidates, MIN_WORDS, MAX_AGE_H);
+  if (!chosen) {
+    log('  ↻ 常规门槛无果，放宽到 7 天 / 450 词再选一次');
+    chosen = await pickFrom(candidates, 450, 7 * 24);
   }
-  if (!chosen) throw new Error('候选全部抓不到正文或篇幅不足');
+  if (!chosen) throw new Error('候选全部抓不到正文或篇幅不足（常规 + 放宽两轮均失败）');
 
   // 导读与精读：拿到就完整写入，拿不到就如实标记，不假装有
   let meta = {};
