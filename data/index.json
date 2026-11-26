@@ -1,12 +1,41 @@
 {
-  "updated": "2026-11-26",
+  "updated": "2026-11-27",
   "counts": {
-    "articles": 4,
+    "articles": 5,
     "books": 0,
     "series": 0,
     "films": 0
   },
   "issues": [
+    {
+      "date": "2026-11-27",
+      "title": "Turkeys I Have Known and Loved",
+      "title_zh": "火鸡，我所知所爱",
+      "author": "Helen Rosner",
+      "source": "The New Yorker",
+      "link": "https://www.newyorker.com/culture/the-food-scene/turkeys-i-have-known-and-loved",
+      "words": 1075,
+      "minutes": 5,
+      "published": "2026-11-26T11:00:00.000Z",
+      "genre": "散文",
+      "cefr": "B2（长句多、抽象名词多）",
+      "themes": [
+        "感恩节",
+        "火鸡",
+        "美食文化",
+        "传统与变迁"
+      ],
+      "tldr": "火鸡是节日符号，作者借其怪诞之美重拾感恩节简单快乐。",
+      "digest": "作者原本对感恩节兴致不高，直到在TikTok看到火鸡开胃串，被其荒诞创意打动，进而回忆起自己与火鸡的种种缘分：巧克力火鸡、塑料发光火鸡、火鸡指偶等。她发现活火鸡作为节日图腾，既美丽又恐怖，而感恩节的意义并不在于特定鸟类，而在于感恩、秋收与季节更替。文章以幽默笔触探讨传统与个人情感，提醒我们节日快乐可以来自简单荒诞的事物。",
+      "points": [
+        "作者因火鸡开胃串重燃对感恩节的兴趣，这道菜用腌辣椒、冷切肉和奶酪拼成火鸡造型。",
+        "活火鸡作为节日图腾，既美丽又恐怖，与餐桌上的烤火鸡形象相去甚远。",
+        "感恩节传统不在特定食物，而在感恩、秋收与季节更替，作者对节日的感情经历多次循环。"
+      ],
+      "snippet": "In the meantime, I thought about the Turkey Antipasto Skewer on the bus to a fancy dinner: Maybe I’d pipe the insides of the peppers with a puff of garlic-spiked ricotta or milk-thinned Boursin? I thought about it while ",
+      "has_analysis": true,
+      "has_translation": false
+    },
     {
       "date": "2026-11-26",
       "title": "The Price of an Iranian Life",
