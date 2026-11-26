@@ -173,6 +173,13 @@
 .pref__seg button:last-child { border-right: 0; }
 .pref__seg button:hover { color: var(--ink); }
 .pref__seg button.on { background: var(--ink); color: var(--paper); }
+.pref__seg input {
+  width: 44px; height: 26px; min-width: 0; padding: 0 2px;
+  border: 0; border-right: 1px solid var(--rule-soft);
+  background: transparent; color: var(--ink); text-align: center;
+  font-family: var(--font-mono); font-size: 11px;
+}
+.pref__seg button[data-progress] { width: auto; min-width: 34px; padding: 0 5px; }
 
 .rail__rate { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--rule); }
 
