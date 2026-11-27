@@ -119,8 +119,10 @@ const DOMAIN_BOOST = [
   [/(nvidianews\.nvidia\.com|blog\.google|apple\.com|microsoft\.com|about\.fb\.com|meta\.com|amazon\.com|stripe\.com|shopify\.com)$/i, 70],
   // 主流媒体：降权，不再压过大佬一手长文
   [/(nytimes|bloomberg|wsj\.com|ft\.com|reuters|apnews|theverge|techcrunch|wired|economist|newyorker|theatlantic|axios|cnbc|fortune|businessinsider|economictimes|livemint|scmp|nikkei|theinformation)/i, 12],
-  // 社交/UGC：不再一票压死（原 -30），但仍低于一手长文；原帖靠 fxtwitter/镜像另判，正文长度门槛兜底
-  [/(medium\.com|substack\.com|linkedin\.com|reddit\.com|quora|facebook\.com|x\.com|twitter\.com|youtube\.com)/i, -5],
+  // X/推特帖子：2026-11-27 用户确认二手讨论帖也可接受，site:x.com 搜到的原帖/转述给正分，
+  // 让它能进候选池（但仍低于大佬本人一手长文 78）。其余 UGC 保持轻降权。
+  [/(x\.com|twitter\.com)/i, 20],
+  [/(medium\.com|substack\.com|linkedin\.com|reddit\.com|quora|facebook\.com|youtube\.com)/i, -5],
   // 二手聚合/转载站：标题里常有 "Read full letter"、正文是别人的稿子，2026-11-24 用户明确要求只收一手
   [/(techdogs|gasgoo|futunn|autonews|indiatimes|livemint|firstpost|news18|zeenews|sohu|163\.com|sina|toutiao|36kr|jiemian|thepaper)/i, -60],
 ];
@@ -402,6 +404,10 @@ const HOT_QUERIES = [
   'Dario Amodei essay reflection AI anthropic latest',
   'Sam Altman blog essay latest thoughts',
   'Elon Musk long post essay X latest',
+  // 2026-11-27 用户确认：推特二手内容也可接受。site:x.com 实测能让 Firecrawl 返回 X 帖
+  // （不带 site: 只会返回二手新闻报道）；官方 exa 未配 key，实际走 firecrawl。
+  'site:x.com Dario Amodei Sam Altman Elon Musk AI',
+  'site:x.com Anthropic Claude OpenAI GPT announcement',
   'CEO resignation letter to employees this week',
   'open letter to employees AI company 2026',
   'founder public apology letter full text',
@@ -561,8 +567,12 @@ async function main() {
           log(`  ↻ ${c.source} 直抓 ${e.message}，改用渲染版`);
           rendered = true;
         }
-        const official = /newsroom|nvidia|openai|anthropic|apple|microsoft|meta\.com|tesla|darioamodei|samaltman|x\.ai|spacex/i.test(hostOf(c.link));
-        const minOk = c.forced ? 80 : (official ? Math.min(350, minWords) : minWords);
+        const host = hostOf(c.link);
+        const official = /newsroom|nvidia|openai|anthropic|apple|microsoft|meta\.com|tesla|darioamodei|samaltman|x\.ai|spacex/i.test(host);
+        // X/推特帖子正文短（二手讨论帖多为几十~几百词），单独放宽到 120 词；
+        // 2026-11-27 用户确认这类内容可接受。其余维持原门槛。
+        const isSocial = /^(x\.com|twitter\.com)$/i.test(host);
+        const minOk = c.forced ? 80 : (isSocial ? 120 : (official ? Math.min(350, minWords) : minWords));
         const maxAge = c.forced ? 365 * 24 : (official ? Math.min(14 * 24, maxAgeH) : maxAgeH);
         if (rendered || words < minOk) {
           const md = await firecrawlMarkdown(c.link);
