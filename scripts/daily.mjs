@@ -443,6 +443,55 @@ async function gatherWeb() {
   return out;
 }
 
+// ── 大佬一手长文源（2026-11-27 用户要求）──
+// 达里奥/马斯克/山姆·奥特曼等大佬的社交原帖搜索引擎抓不到正文（实测 8 条里 7 条是二手报道），
+// 但他们本人署名的长文有稳定入口：个人站 sitemap / 官方 newsroom 栏目页 / 官方 RSS。
+// 这里从这些入口解析文章 URL，作为高优先级候选；这些长文本身不常更新，故豁免 72h 时间窗，
+// 靠 data/history.json 去重防止重复写同一篇。
+async function gatherLeaders() {
+  let cfg;
+  try {
+    cfg = JSON.parse(readFileSync(join(ROOT, 'scripts', 'leaders.json'), 'utf8'));
+  } catch { return []; }
+  const out = [];
+  const seen = new Set();
+  await Promise.all((cfg.sources || []).map(async (s) => {
+    try {
+      const doc = await get(s.url, 30000);
+      let urls = [];
+      if (s.type === 'sitemap') {
+        urls = [...doc.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map(m => m[1]).slice(0, 30);
+      } else if (s.type === 'rss') {
+        // 只取 <item> 内的 <link>：OpenAI 的 RSS 用 <link> 做 language alternate，
+        // 直接全局匹配会捞到 1400+ 条导航链接（2026-11-27 实撞）。
+        const items = doc.match(/<item[\s>][\s\S]*?<\/item>/g) || [];
+        urls = items.slice(0, 15).map(it => (it.match(/<link>\s*([^<\s]+)\s*<\/link>/) || [])[1]).filter(Boolean);
+      } else if (s.type === 'page') {
+        urls = [...doc.matchAll(/href=["']([^"']+)["']/g)].map(m => m[1]).slice(0, 40);
+      }
+      const re = s.match ? new RegExp(s.match, 'i') : /./;
+      let n = 0;
+      for (const u0 of urls) {
+        let u = u0;
+        try { u = new URL(u0, s.url).href; } catch { continue; }
+        if (seen.has(u) || !re.test(u)) continue;
+        seen.add(u);
+        // ts=0 表示"不受新鲜度过滤"；isLeader 让主流程豁免 72h 并加权
+        out.push({
+          source: s.name, weight: s.weight, title: '', link: u,
+          excerpt: '', ts: 0, viaSearch: true, isLeader: true,
+        });
+        n++;
+      }
+      log(`  ✓ 大佬源 ${s.name}  ${n} 篇长文`);
+    } catch (e) {
+      log(`  ✗ 大佬源 ${s.name}  ${e.message}`);
+    }
+  }));
+  log(`  大佬一手长文候选 ${out.length} 篇`);
+  return out;
+}
+
 function pickTarget() {
   const t = today();
   if (TARGET_DATE) return TARGET_DATE;
@@ -470,15 +519,16 @@ async function main() {
   const now = Date.now();
   globalThis.__bias = sourceBias();
   if (Object.keys(globalThis.__bias).length) log('  个性化权重：' + Object.entries(globalThis.__bias).map(([k, v]) => `${k}×${v.toFixed(2)}`).join(' / '));
-  const [feedItems, webItems] = await Promise.all([gather(), gatherWeb()]);
+  const [feedItems, webItems, leaderItems] = await Promise.all([gather(), gatherWeb(), gatherLeaders()]);
   // 同一站点最多占 3 个名额：否则 The Atlantic 一批 403 就能把整个候选池占满，
   // 明明 Aeon / Stratechery 等源有可抓的长文，脚本却报「候选全部抓不到」（2026-11-26 实撞）。
   const perHost = Object.create(null);
-  const candidates = [...webItems, ...feedItems]
+  const candidates = [...leaderItems, ...webItems, ...feedItems]
     .filter(x => !history.has(x.link))
-    .filter(x => englishRatio(x.title) > 0.6)
-    .filter(x => now - x.ts <= MAX_AGE_H * 3600e3)
-    .map(x => ({ ...x, heat: hotScore(x) }))
+    // 大佬一手长文：标题由正文抓取时再取（此处为空），故跳过英文标题比例与 72h 时间窗过滤；
+    // 大佬长文本身不常更新，靠 history 去重即可防重复。
+    .filter(x => x.isLeader || (englishRatio(x.title) > 0.6 && now - x.ts <= MAX_AGE_H * 3600e3))
+    .map(x => ({ ...x, heat: hotScore(x) + (x.isLeader ? 60 : 0) }))
     .filter(x => {
       const h = hostOf(x.link) || 'web';
       perHost[h] = (perHost[h] || 0) + 1;
