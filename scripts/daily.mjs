@@ -132,7 +132,9 @@ function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } c
 
 const HOT = [
   [/\b(resign|resignation|steps down|ousted)\b/i, 26],
-  [/\b(apolog|apology|sorry|open letter|letter to)\b/i, 26],
+  // 2026-11-27 用户要求：黄仁勋道歉信这类「CEO 公开信/致员工信/声明」是真正有用的文章，
+  // 优先级压过大佬域名长文（78）。这类是不可替代的一手事件文本，不是普通杂志散文。
+  [/\b(apolog|apology|apologizes|sorry|open letter|letter to (staff|employees)|memo to|statement from)\b/i, 90],
   [/\b(dario amodei|dario|sam altman|elon musk|jensen huang|demis hassabis|mustafa suleyman)\b/i, 34],
   [/\b(nvidia|jensen huang|openai|anthropic|sam altman|apple|tim cook|tesla|musk)\b/i, 22],
   [/\b(layoff|layoffs|shut down|bankrupt|crisis|collapse)\b/i, 16],
@@ -408,6 +410,10 @@ const HOT_QUERIES = [
   // （不带 site: 只会返回二手新闻报道）；官方 exa 未配 key，实际走 firecrawl。
   'site:x.com Dario Amodei Sam Altman Elon Musk AI',
   'site:x.com Anthropic Claude OpenAI GPT announcement',
+  // 2026-11-27 用户举例「黄仁勋的道歉信」：CEO 公开信/致员工信/道歉声明优先
+  'Jensen Huang apology letter to Nvidia employees',
+  'CEO open letter apology statement to employees 2026',
+  'tech CEO memo to employees controversy apology',
   'CEO resignation letter to employees this week',
   'open letter to employees AI company 2026',
   'founder public apology letter full text',
@@ -424,7 +430,11 @@ function psSearch(query) {
           resolve((j.results || []).map(r => ({
             source: hostOf(r.url || r.link || '') || 'web', weight: 12,
             title: r.title || '', link: r.url || r.link || '',
-            excerpt: r.description || r.snippet || r.text || '', ts: 0, viaSearch: true,
+            excerpt: r.description || r.snippet || r.text || '',
+            // 2026-11-27 修复：搜索结果原 ts=0（1970年）会被候选池的 72h 时间窗全部过滤掉，
+            // 导致「CEO 公开信」这类只在搜索里的题材永远进不了候选。改为用「刚搜到」的时间，
+            // 真实发布日期在 pickFrom 抓正文时由 pageDate 再校验。
+            ts: Date.now(), viaSearch: true,
           })).filter(x => x.link && x.title));
         } catch (e) { resolve([]); }
       });
@@ -435,7 +445,14 @@ async function gatherWeb() {
   const lists = await Promise.all(HOT_QUERIES.map(psSearch));
   const seen = new Set();
   const out = [];
-  for (const list of lists) for (const x of list) {
+  // CEO 公开信/道歉信：题材本身不受 72h 时间窗限制（2026-11-27 用户要「黄仁勋道歉信」这类）
+  // 只认「公开信原文 / 原始报道」：标题必须同时出现「公开信类动作词」且不含「解读/评论/总结」词。
+  // 2026-11-27 实撞：explainx.ai 的 "X Letter Explained" 二手解读被误判进候选并选中，故收紧。
+  const LETTER_RE = /\b(apolog|apolog(y|izes|ise)|open letter|letter to (staff|employees|the board)|memo to|statement (from|to)|resign(ation)? letter|read (the |his |her )?(memo|letter))\b/i;
+  const LETTER_NEG = /\b(explained|explainer|review|summary|recap|analysis|what it means|breakdown|opinion|commentary)\b/i;
+  const isLetterTitle = (t) => LETTER_RE.test(t) && !LETTER_NEG.test(t);
+  for (const list of lists) for (const x0 of list) {
+    const x = { ...x0, isLetter: isLetterTitle((x0.title || '') + ' ' + (x0.excerpt || '')) };
     if (seen.has(x.link)) continue;
     seen.add(x.link);
     // 搜索结果的标题多是中文站转载，只留英文标题的页面
@@ -443,6 +460,19 @@ async function gatherWeb() {
     if (LISTICLE.test(x.title)) continue;   // 范本/教程/清单类不是新闻
     // 二手转载站直接丢：2026-11-24 用户要求「只要一手优质」，转载稿的日期和措辞都不可信
     if (SECONDHAND.test(hostOf(x.link))) continue;
+    // 2026-11-27 实撞：blog.samaltman.com/2279512 这种纯数字碎帖、或博客/站点首页，
+    // 抓进来标题都是残句（"has a real ring of power dynamic to it"），不是完整文章。
+    // 规则：URL 是根路径、或末段是纯数字 ID 的，当碎片丢掉。
+    try {
+      const u = new URL(x.link);
+      const seg = u.pathname.replace(/\/+$/, '');
+      if (seg === '' ) continue;                       // 站点首页
+      const last = seg.split('/').pop() || '';
+      if (/^\d{4,}$/.test(last)) continue;             // 纯数字 ID 碎帖
+    } catch { continue; }
+    // 标题短且不是完整句（无空格或以小写/引语开头）——多半是残句
+    const tt = (x.title || '').trim();
+    if (tt.length < 12) continue;
     out.push(x);
   }
   log(`  全网搜索补充 ${out.length} 条（英文标题）`);
@@ -533,7 +563,7 @@ async function main() {
     .filter(x => !history.has(x.link))
     // 大佬一手长文：标题由正文抓取时再取（此处为空），故跳过英文标题比例与 72h 时间窗过滤；
     // 大佬长文本身不常更新，靠 history 去重即可防重复。
-    .filter(x => x.isLeader || (englishRatio(x.title) > 0.6 && now - x.ts <= MAX_AGE_H * 3600e3))
+    .filter(x => x.isLeader || x.isLetter || (englishRatio(x.title) > 0.6 && now - x.ts <= MAX_AGE_H * 3600e3))
     .map(x => ({ ...x, heat: hotScore(x) + (x.isLeader ? 60 : 0) }))
     .filter(x => {
       const h = hostOf(x.link) || 'web';
@@ -583,7 +613,7 @@ async function main() {
             // 渲染页常常没有 meta 时间，退回正文里那句 "November 8, 2026"
             const mdDate = md.match(/([A-Z][a-z]{2,8}\s+\d{1,2},\s+20\d{2})/);
             const ts2 = pageDate(html) || (mdDate ? Date.parse(mdDate[1]) : (c.viaSearch ? 0 : c.ts));
-            if (!c.forced && ts2 > 0 && (Date.now() - ts2) / 3600e3 > maxAge) {
+            if (!c.forced && !c.isLetter && ts2 > 0 && (Date.now() - ts2) / 3600e3 > maxAge) {
               log(`  - 跳过 ${c.source}｜渲染页日期 ${new Date(ts2).toISOString().slice(0, 10)}，超出 ${maxAgeH} 小时`);
               continue;
             }
@@ -601,7 +631,7 @@ async function main() {
         }
         const realTs = pageDate(html);
         const real = realTs || (c.viaSearch ? 0 : c.ts);
-        if (!c.forced && real > 0 && (Date.now() - real) / 3600e3 > maxAge) {
+        if (!c.forced && !c.isLetter && real > 0 && (Date.now() - real) / 3600e3 > maxAge) {
           log(`  - 跳过 ${c.source}｜正文日期 ${new Date(real).toISOString().slice(0, 10)}，超出 ${maxAgeH} 小时`);
           continue;
         }
