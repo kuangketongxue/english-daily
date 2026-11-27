@@ -108,11 +108,19 @@ async function gather() {
 
 // 热点信号：先按「当下最容易被讨论的题材」给标题与摘要加权，
 // 再让站点权重兜底。纯杂志散文永远排在爆款公开信后面 —— 这是本人 2026-11-24 的要求。
-// 域名与体裁：官方 newsroom 最高分，主流媒体次之，UGC 与“范本/教程”类直接降权或丢弃
+// 域名与体裁：大佬一手长文 > 官方 newsroom > 主流媒体 > 二手报道/UGC。
+// 2026-11-27 用户要求：达里奥/马斯克/山姆·奥特曼等大佬的社交/个人署名长文应优先于纽约时报等媒体。
+// 注意：搜索引擎抓不到 X 原帖正文（实测 8 条里 7 条是二手报道、1 条 reddit 转述），
+// 故真正能选中并精读的是大佬本人署名的一手长文（个人站/官方 newsroom/本人 Substack）。
 const DOMAIN_BOOST = [
-  [/(nvidianews\.nvidia\.com|blogs\.nvidia\.com|openai\.com|anthropic\.com|blog\.google|apple\.com|microsoft\.com|about\.fb\.com|meta\.com|tesla\.com|amazon\.com|stripe\.com|shopify\.com)$/i, 70],
-  [/(nytimes|bloomberg|wsj\.com|ft\.com|reuters|apnews|theverge|techcrunch|wired|economist|newyorker|theatlantic|axios|cnbc|fortune|businessinsider|economictimes|livemint|scmp|nikkei|theinformation)/i, 30],
-  [/(medium\.com|substack\.com|linkedin\.com|reddit\.com|quora|facebook\.com|x\.com|twitter\.com|youtube\.com)/i, -30],
+  // 大佬本人署名的一手长文：最高优先级
+  [/(darioamodei\.com|samaltman\.com|anthropic\.com|openai\.com|x\.ai|tesla\.com|spacex\.com|nvidia\.com|blogs\.nvidia\.com)$/i, 78],
+  // 其他公司官方 newsroom
+  [/(nvidianews\.nvidia\.com|blog\.google|apple\.com|microsoft\.com|about\.fb\.com|meta\.com|amazon\.com|stripe\.com|shopify\.com)$/i, 70],
+  // 主流媒体：降权，不再压过大佬一手长文
+  [/(nytimes|bloomberg|wsj\.com|ft\.com|reuters|apnews|theverge|techcrunch|wired|economist|newyorker|theatlantic|axios|cnbc|fortune|businessinsider|economictimes|livemint|scmp|nikkei|theinformation)/i, 12],
+  // 社交/UGC：不再一票压死（原 -30），但仍低于一手长文；原帖靠 fxtwitter/镜像另判，正文长度门槛兜底
+  [/(medium\.com|substack\.com|linkedin\.com|reddit\.com|quora|facebook\.com|x\.com|twitter\.com|youtube\.com)/i, -5],
   // 二手聚合/转载站：标题里常有 "Read full letter"、正文是别人的稿子，2026-11-24 用户明确要求只收一手
   [/(techdogs|gasgoo|futunn|autonews|indiatimes|livemint|firstpost|news18|zeenews|sohu|163\.com|sina|toutiao|36kr|jiemian|thepaper)/i, -60],
 ];
@@ -123,6 +131,7 @@ function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } c
 const HOT = [
   [/\b(resign|resignation|steps down|ousted)\b/i, 26],
   [/\b(apolog|apology|sorry|open letter|letter to)\b/i, 26],
+  [/\b(dario amodei|dario|sam altman|elon musk|jensen huang|demis hassabis|mustafa suleyman)\b/i, 34],
   [/\b(nvidia|jensen huang|openai|anthropic|sam altman|apple|tim cook|tesla|musk)\b/i, 22],
   [/\b(layoff|layoffs|shut down|bankrupt|crisis|collapse)\b/i, 16],
   [/\b(ai|artificial intelligence|model|chip|gpu|agent)\b/i, 12],
@@ -389,6 +398,10 @@ function rebuildIndex() {
 // 媒体 RSS 拿不到「公司自己发的信」，这类东西只在 newsroom 和全网索引里。
 // 所以每天先用几条热点 query 去搜，搜到的页面与 RSS 候选一起排序，热点稿天然靠前。
 const HOT_QUERIES = [
+  // 2026-11-27 用户要求：大佬本人署名的一手长文优先（达里奥/马斯克/山姆·奥特曼）
+  'Dario Amodei essay reflection AI anthropic latest',
+  'Sam Altman blog essay latest thoughts',
+  'Elon Musk long post essay X latest',
   'CEO resignation letter to employees this week',
   'open letter to employees AI company 2026',
   'founder public apology letter full text',
@@ -498,7 +511,7 @@ async function main() {
           log(`  ↻ ${c.source} 直抓 ${e.message}，改用渲染版`);
           rendered = true;
         }
-        const official = /newsroom|nvidia|openai|anthropic|apple|microsoft|meta\.com|tesla/i.test(hostOf(c.link));
+        const official = /newsroom|nvidia|openai|anthropic|apple|microsoft|meta\.com|tesla|darioamodei|samaltman|x\.ai|spacex/i.test(hostOf(c.link));
         const minOk = c.forced ? 80 : (official ? Math.min(350, minWords) : minWords);
         const maxAge = c.forced ? 365 * 24 : (official ? Math.min(14 * 24, maxAgeH) : maxAgeH);
         if (rendered || words < minOk) {
