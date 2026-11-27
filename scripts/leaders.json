@@ -1,0 +1,26 @@
+{
+  "_note": "大佬本人署名的一手长文源（2026-11-27 用户要求：达里奥/马斯克/山姆·奥特曼等大佬文章优先于媒体）。这些站点多为动态页无标准 RSS，故用 sitemap 或栏目页解析文章 URL。只收本人/官方署名的一手长文，二手报道仍由 daily.mjs 的 SECONDHAND 规则拦截。",
+  "sources": [
+    {
+      "name": "Dario Amodei",
+      "type": "sitemap",
+      "url": "https://darioamodei.com/sitemap.xml",
+      "match": "/post/|/essay/",
+      "weight": 90
+    },
+    {
+      "name": "Anthropic News",
+      "type": "page",
+      "url": "https://www.anthropic.com/news",
+      "match": "/news/[a-z0-9-]+",
+      "weight": 80
+    },
+    {
+      "name": "OpenAI News",
+      "type": "rss",
+      "url": "https://openai.com/news/rss.xml",
+      "match": "",
+      "weight": 80
+    }
+  ]
+}
